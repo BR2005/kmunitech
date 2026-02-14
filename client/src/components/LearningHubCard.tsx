@@ -88,7 +88,7 @@ export default function LearningHubCard({ className = '' }: LearningHubCardProps
                         title: 'Certificates that matter',
                         desc: 'Shareable proof backed by shipped work and assessments.',
                     },
-                ].map((item, i) => (
+                ].map((item) => (
                     <div
                         key={item.title}
                         className="flex items-start gap-4 rounded-2xl bg-white/5 border border-white/10 p-5 hover:border-gold-400/40 transition-all"
