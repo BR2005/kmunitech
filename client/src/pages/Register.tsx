@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api';
 import { Lock, Mail, User, ArrowRight } from 'lucide-react';
 
 export default function Register() {
@@ -20,7 +20,7 @@ export default function Register() {
         setLoading(true);
         setError('');
         try {
-            const res = await axios.post('http://localhost:3000/auth/register', { name, email, password, role });
+            const res = await api.post('/auth/register', { name, email, password, role });
             login(res.data.access_token, res.data.user);
             navigate('/dashboard');
         } catch (err: any) {

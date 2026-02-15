@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import axios from 'axios';
+import api from '../lib/api';
 import { PlayCircle, ArrowLeft, Clock, BookOpen } from 'lucide-react';
 
 export default function CoursePage() {
@@ -13,7 +13,7 @@ export default function CoursePage() {
     useEffect(() => {
         const fetchCourse = async () => {
             try {
-                const res = await axios.get(`http://localhost:3000/courses/${id}`);
+                const res = await api.get(`/courses/${id}`);
                 setCourse(res.data);
                 if (res.data.lessons && res.data.lessons.length > 0) {
                     setActiveLesson(res.data.lessons[0]);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import axios from 'axios';
+import api from '../lib/api';
 import { BookOpen, ArrowRight, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +12,7 @@ export default function Courses() {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/courses');
+                const res = await api.get('/courses');
                 setCourses(res.data);
             } catch (err) {
                 console.error(err);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { Plus, Edit, Trash, BookOpen, X } from 'lucide-react';
 
 export default function StaffDashboard() {
@@ -14,7 +14,7 @@ export default function StaffDashboard() {
 
     const fetchMyCourses = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/courses');
+            const res = await api.get('/courses');
             setCourses(res.data);
         } catch (err) {
             console.error(err);
@@ -26,7 +26,7 @@ export default function StaffDashboard() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:3000/courses', newCourse);
+            await api.post('/courses', newCourse);
             setIsCreating(false);
             setNewCourse({ title: '', description: '' });
             fetchMyCourses();

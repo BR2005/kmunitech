@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../lib/api';
 import { BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ export default function StudentDashboard() {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/courses');
+                const res = await api.get('/courses');
                 setCourses(res.data);
             } catch (err) {
                 console.error(err);
