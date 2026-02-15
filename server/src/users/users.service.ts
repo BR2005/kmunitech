@@ -30,4 +30,28 @@ export class UsersService {
         });
         return this.usersRepository.save(newUser);
     }
+
+    async findAllSafe(): Promise<Array<Pick<User, 'id' | 'name' | 'email' | 'role' | 'createdAt' | 'updatedAt'>>> {
+        const users = await this.usersRepository.find({
+            order: { createdAt: 'DESC' },
+        });
+        return users.map(({ id, name, email, role, createdAt, updatedAt }) => ({
+            id,
+            name,
+            email,
+            role,
+            createdAt,
+            updatedAt,
+        }));
+    }
+
+    async setPasswordById(id: string, newPassword: string): Promise<boolean> {
+        const user = await this.findOneById(id);
+        if (!user) return false;
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await this.usersRepository.save(user);
+        return true;
+    }
 }

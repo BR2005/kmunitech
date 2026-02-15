@@ -8,6 +8,7 @@ import { Enrollment } from './enrollments/enrollment.entity';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CoursesModule } from './courses/courses.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CoursesModule } from './courses/courses.module';
     UsersModule,
     AuthModule,
     CoursesModule,
+    AdminModule,
   ],
 })
 export class AppModule { }
