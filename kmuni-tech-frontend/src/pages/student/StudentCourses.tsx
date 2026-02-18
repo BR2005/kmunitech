@@ -1,12 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { MOCK_COURSES } from '../../data/mockCourses';
-import { Play, CheckCircle, Clock } from 'lucide-react';
+import { Play, Clock } from 'lucide-react';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useAuth } from '../../context/AuthContext';
+import { Enrollment } from '../../types';
+import { fetchStudentEnrollments } from '../../utils/api';
 
 export default function StudentCourses() {
-  const enrolled = MOCK_COURSES.slice(0, 3);
-  const progress = [65, 35, 20];
+  const { token } = useAuth();
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const data = await fetchStudentEnrollments(token);
+        if (!mounted) return;
+        setEnrollments(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load enrollments');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
 
   return (
     <DashboardLayout>
@@ -15,25 +44,33 @@ export default function StudentCourses() {
         <p className="text-slate-400 mt-1">Track your enrolled courses and progress</p>
       </div>
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {enrolled.map((course, i) => (
-          <div key={course.id} className="card-hover overflow-hidden">
+        {isLoading ? (
+          <div className="col-span-full py-12">
+            <LoadingSpinner text="Loading your courses..." />
+          </div>
+        ) : loadError ? (
+          <div className="col-span-full text-center py-12">
+            <p className="text-slate-400 text-sm">{loadError}</p>
+          </div>
+        ) : enrollments.map((enrollment, i) => (
+          <div key={enrollment.id} className="card-hover overflow-hidden">
             <div className={`h-36 bg-gradient-to-br ${['from-indigo-600 to-purple-700','from-blue-600 to-cyan-600','from-orange-600 to-red-600'][i]} relative`}>
               <div className="absolute bottom-3 right-3">
-                <span className="bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-lg">{progress[i]}%</span>
+                <span className="bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-lg">{enrollment.progress}%</span>
               </div>
             </div>
             <div className="p-5">
-              <h3 className="text-white font-semibold text-base mb-1 line-clamp-2">{course.title}</h3>
-              <p className="text-slate-500 text-xs mb-4">by {course.instructorName}</p>
+              <h3 className="text-white font-semibold text-base mb-1 line-clamp-2">{enrollment.courseTitle}</h3>
+              <p className="text-slate-500 text-xs mb-4">by {enrollment.instructorName}</p>
               <div className="progress-bar mb-2">
-                <div className="progress-fill" style={{ width: `${progress[i]}%` }} />
+                <div className="progress-fill" style={{ width: `${enrollment.progress}%` }} />
               </div>
               <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
-                <span>{progress[i]}% complete</span>
-                <span className="flex items-center gap-1"><Clock size={10} />{course.totalDuration}m total</span>
+                <span>{enrollment.progress}% complete</span>
+                <span className="flex items-center gap-1"><Clock size={10} />Progress</span>
               </div>
-              <Link to={`/courses/${course.id}`} className="btn-primary w-full py-2.5 text-sm flex items-center justify-center gap-2">
-                <Play size={14} /> {progress[i] > 0 ? 'Continue' : 'Start'}
+              <Link to={`/courses/${enrollment.courseId}`} className="btn-primary w-full py-2.5 text-sm flex items-center justify-center gap-2">
+                <Play size={14} /> {enrollment.progress > 0 ? 'Continue' : 'Start'}
               </Link>
             </div>
           </div>

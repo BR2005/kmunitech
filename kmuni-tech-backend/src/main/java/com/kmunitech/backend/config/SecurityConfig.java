@@ -46,7 +46,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/courses", "/api/courses/*/", "/api/courses/featured").permitAll()
+                    .requestMatchers("/api/courses", "/api/courses/*", "/api/courses/featured").permitAll()
+
+                    // Media streaming: public but signed
+                    .requestMatchers("/api/media/lessons/*/stream").permitAll()
+
+                    // Media metadata / playback URL creation: requires authentication
+                    .requestMatchers("/api/media/**").authenticated()
 
                         // Course enrollment requires authentication (student role)
                         .requestMatchers("/api/courses/*/enroll").hasRole("STUDENT")

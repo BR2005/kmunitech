@@ -1,24 +1,143 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { PlusCircle, Trash2, GripVertical, Save, Upload, Video } from 'lucide-react';
+import { PlusCircle, Trash2, GripVertical, Save } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { createInstructorCourse } from '../../utils/api';
+import { uploadLessonVideoToSupabase } from '../../utils/supabase';
+
+type LessonForm = {
+  id: number;
+  title: string;
+  description: string;
+  duration: string;
+  isPreview: boolean;
+  videoUrl: string;
+  videoFile: File | null;
+};
+
+const CATEGORY_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Web Development', value: 'web-dev' },
+  { label: 'AI & ML', value: 'ai-ml' },
+  { label: 'Data Science', value: 'data-science' },
+  { label: 'Mobile', value: 'mobile' },
+  { label: 'DevOps', value: 'devops' },
+  { label: 'Design', value: 'design' },
+  { label: 'Business', value: 'business' },
+];
+
+const LEVEL_OPTIONS: Array<{ label: string; value: string }> = [
+  { label: 'Beginner', value: 'beginner' },
+  { label: 'Intermediate', value: 'intermediate' },
+  { label: 'Advanced', value: 'advanced' },
+];
 
 export default function CreateCourse() {
-  const [lessons, setLessons] = useState([{ id: 1, title: '', description: '', duration: '', isPreview: false }]);
-  const [saved, setSaved] = useState(false);
-  const [promoVideo, setPromoVideo] = useState<File | null>(null);
-  const [courseVideos, setCourseVideos] = useState<File[]>([]);
+  const navigate = useNavigate();
+  const { token, user } = useAuth();
 
-  const addLesson = () => setLessons(prev => [...prev, { id: Date.now(), title: '', description: '', duration: '', isPreview: false }]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState(CATEGORY_OPTIONS[0].value);
+  const [level, setLevel] = useState(LEVEL_OPTIONS[0].value);
+  const [price, setPrice] = useState<string>('0');
+  const [thumbnail, setThumbnail] = useState('');
+  const [tags, setTags] = useState('');
+
+  const [lessons, setLessons] = useState<LessonForm[]>([
+    { id: 1, title: '', description: '', duration: '', isPreview: false, videoUrl: '', videoFile: null },
+  ]);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const addLesson = () => setLessons(prev => [...prev, { id: Date.now(), title: '', description: '', duration: '', isPreview: false, videoUrl: '', videoFile: null }]);
   const removeLesson = (id: number) => setLessons(prev => prev.filter(l => l.id !== id));
-  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) setPromoVideo(file);
+
+  const parsedTags = useMemo(() => {
+    const list = tags
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+    return Array.from(new Set(list));
+  }, [tags]);
+
+  const handlePublish = async () => {
+    if (!token) {
+      setError('Please login as an instructor to publish a course.');
+      return;
+    }
+
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      const lessonsPayload = lessons.map((l, index) => {
+        const duration = Number(l.duration);
+        return {
+          title: l.title.trim(),
+          description: l.description.trim() || undefined,
+          duration: Number.isFinite(duration) ? duration : 0,
+          order: index + 1,
+          isPreview: Boolean(l.isPreview),
+          videoUrl: l.videoUrl.trim() || undefined,
+        };
+      });
+
+      // Lightweight client-side validation matching backend constraints
+      if (title.trim().length < 5) throw new Error('Course title must be at least 5 characters.');
+      if (description.trim().length < 20) throw new Error('Course description must be at least 20 characters.');
+      const priceValue = Number(price);
+      if (!Number.isFinite(priceValue) || priceValue < 0) throw new Error('Price must be 0 or greater.');
+      if (!category) throw new Error('Please select a category.');
+      if (!level) throw new Error('Please select a level.');
+      if (lessonsPayload.length === 0) throw new Error('Please add at least one lesson.');
+      for (const [i, lesson] of lessonsPayload.entries()) {
+        if (!lesson.title || lesson.title.length === 0) throw new Error(`Lesson ${i + 1} title is required.`);
+        if (!lesson.duration || lesson.duration < 1) throw new Error(`Lesson ${i + 1} duration must be at least 1 minute.`);
+        const hasUrl = Boolean(lesson.videoUrl && lesson.videoUrl.length > 0);
+        const hasFile = Boolean(lessons[i]?.videoFile);
+        if (!hasUrl && !hasFile) throw new Error(`Lesson ${i + 1} needs a video URL or an uploaded file.`);
+      }
+
+      // Upload lesson video files to Supabase Storage and use their public URLs
+      // (If a lesson has both a URL and a file, the uploaded file wins.)
+      for (let i = 0; i < lessonsPayload.length; i += 1) {
+        const file = lessons[i]?.videoFile;
+        if (!file) continue;
+
+        try {
+          const uploaded = await uploadLessonVideoToSupabase({
+            file,
+            instructorId: user?.id,
+            courseTitle: title.trim(),
+          });
+          lessonsPayload[i] = { ...lessonsPayload[i], videoUrl: uploaded.publicUrl };
+        } catch (e: any) {
+          throw new Error(`Lesson ${i + 1} video upload failed: ${e?.message || 'Unknown error'}`);
+        }
+      }
+
+      const created = await createInstructorCourse({
+        title: title.trim(),
+        description: description.trim(),
+        thumbnail: thumbnail.trim() || undefined,
+        price: priceValue,
+        level,
+        category,
+        tags: parsedTags,
+        lessons: lessonsPayload,
+      }, token);
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      navigate('/instructor/courses');
+    } catch (e: any) {
+      setError(e?.message || 'Failed to publish course.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  const handleCourseVideosUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files ? Array.from(event.target.files) : [];
-    if (files.length) setCourseVideos(prev => [...prev, ...files]);
-  };
-  const removeCourseVideo = (name: string) => setCourseVideos(prev => prev.filter(f => f.name !== name));
 
   return (
     <DashboardLayout>
@@ -29,74 +148,87 @@ export default function CreateCourse() {
         <div className="card p-6">
           <h2 className="text-white font-bold text-lg mb-5">Course Information</h2>
           <div className="space-y-4">
-            <div><label className="block text-slate-300 text-sm font-medium mb-2">Course Title *</label><input className="input-field" placeholder="e.g. Complete React & TypeScript Masterclass" /></div>
-            <div><label className="block text-slate-300 text-sm font-medium mb-2">Description *</label><textarea rows={4} className="input-field resize-none" placeholder="What will students learn in this course?" /></div>
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl p-3 text-sm">
+                {error}
+              </div>
+            )}
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Course Title *</label>
+              <input
+                className="input-field"
+                placeholder="e.g. Complete React & TypeScript Masterclass"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-2">Description *</label>
+              <textarea
+                rows={4}
+                className="input-field resize-none"
+                placeholder="What will students learn in this course?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Category</label>
-                <select className="input-field cursor-pointer">
-                  {['Web Development','AI & ML','Data Science','Mobile','DevOps','Design','Business'].map(c => <option key={c} className="bg-[#12141f]">{c}</option>)}
+                <select
+                  className="input-field cursor-pointer"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  {CATEGORY_OPTIONS.map((c) => (
+                    <option key={c.value} value={c.value} className="bg-[#12141f]">{c.label}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Level</label>
-                <select className="input-field cursor-pointer">
-                  {['Beginner','Intermediate','Advanced'].map(l => <option key={l} className="bg-[#12141f]">{l}</option>)}
+                <select
+                  className="input-field cursor-pointer"
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                >
+                  {LEVEL_OPTIONS.map((l) => (
+                    <option key={l.value} value={l.value} className="bg-[#12141f]">{l.label}</option>
+                  ))}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Price (INR)</label>
-                <input type="number" min="0" className="input-field" placeholder="0 for free" />
+                <input
+                  type="number"
+                  min="0"
+                  className="input-field"
+                  placeholder="0 for free"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                />
               </div>
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-2">Thumbnail URL</label>
-                <input type="url" className="input-field" placeholder="https://..." />
+                <input
+                  type="url"
+                  className="input-field"
+                  placeholder="https://..."
+                  value={thumbnail}
+                  onChange={(e) => setThumbnail(e.target.value)}
+                />
               </div>
-            </div>
-            <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">Intro / Promo Video</label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <label htmlFor="promoVideo" className="btn-secondary text-sm flex items-center gap-2 cursor-pointer">
-                  <Upload size={14} /> {promoVideo ? 'Replace Video' : 'Upload Video'}
-                </label>
-                <input id="promoVideo" type="file" accept="video/*" className="hidden" onChange={handleVideoUpload} />
-                {promoVideo && (
-                  <div className="flex items-center gap-2 text-slate-300 text-sm truncate max-w-full">
-                    <span className="truncate max-w-[220px]">{promoVideo.name}</span>
-                    <button type="button" onClick={() => setPromoVideo(null)} className="text-red-300 hover:text-red-200 text-xs">
-                      Remove
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="text-slate-500 text-xs mt-2">MP4/WEBM up to ~500MB recommended. The file will be sent when you publish.</p>
             </div>
             <div>
               <label className="block text-slate-300 text-sm font-medium mb-2">Tags (comma-separated)</label>
-              <input className="input-field" placeholder="React, TypeScript, Frontend..." />
-            </div>
-            <div className="space-y-3">
-              <label className="block text-slate-300 text-sm font-medium">Course Content Videos</label>
-              <div className="flex items-center gap-3 flex-wrap">
-                <label htmlFor="courseVideos" className="btn-secondary text-sm flex items-center gap-2 cursor-pointer">
-                  <Video size={14} /> {courseVideos.length ? 'Add More Videos' : 'Upload Course Videos'}
-                </label>
-                <input id="courseVideos" type="file" accept="video/*" multiple className="hidden" onChange={handleCourseVideosUpload} />
-                {courseVideos.length > 0 && <span className="text-slate-400 text-sm">{courseVideos.length} file(s) attached</span>}
-              </div>
-              {courseVideos.length > 0 && (
-                <div className="bg-white/3 rounded-xl border border-white/5 p-3 space-y-2 max-h-40 overflow-auto">
-                  {courseVideos.map(file => (
-                    <div key={file.name} className="flex items-center justify-between text-sm text-slate-300">
-                      <span className="truncate max-w-[260px]">{file.name}</span>
-                      <button type="button" onClick={() => removeCourseVideo(file.name)} className="text-red-300 hover:text-red-200 text-xs">Remove</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <p className="text-slate-500 text-xs">Attach full course videos (multiple files allowed). Files will be sent when you publish.</p>
+              <input
+                className="input-field"
+                placeholder="React, TypeScript, Frontend..."
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -115,14 +247,73 @@ export default function CreateCourse() {
                   <div className="flex-1 space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-7 h-7 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400 text-xs font-bold flex-shrink-0">{i + 1}</div>
-                      <input className="input-field py-2 text-sm" placeholder={`Lesson ${i+1} title`} />
+                      <input
+                        className="input-field py-2 text-sm"
+                        placeholder={`Lesson ${i + 1} title`}
+                        value={lesson.title}
+                        onChange={(e) => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, title: e.target.value } : l))}
+                      />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <input className="input-field py-2 text-sm" placeholder="Description" />
-                      <input type="number" className="input-field py-2 text-sm" placeholder="Duration (minutes)" />
+                      <input
+                        className="input-field py-2 text-sm"
+                        placeholder="Description"
+                        value={lesson.description}
+                        onChange={(e) => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, description: e.target.value } : l))}
+                      />
+                      <input
+                        type="number"
+                        className="input-field py-2 text-sm"
+                        placeholder="Duration (minutes)"
+                        min={1}
+                        value={lesson.duration}
+                        onChange={(e) => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, duration: e.target.value } : l))}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-300 text-xs font-medium mb-2">Lesson Video (upload) or URL *</label>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <label className="btn-secondary text-sm cursor-pointer">
+                          Upload Video File
+                          <input
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] ?? null;
+                              setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, videoFile: file } : l));
+                            }}
+                          />
+                        </label>
+                        {lesson.videoFile && (
+                          <div className="flex items-center gap-2 text-slate-300 text-sm truncate max-w-full">
+                            <span className="truncate max-w-[220px]">{lesson.videoFile.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, videoFile: null } : l))}
+                              className="text-red-300 hover:text-red-200 text-xs"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        type="url"
+                        className="input-field py-2 text-sm"
+                        placeholder="Or paste a video URL (https://...)"
+                        value={lesson.videoUrl}
+                        onChange={(e) => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, videoUrl: e.target.value } : l))}
+                      />
+                      <p className="text-slate-500 text-xs mt-2">Udemy-style: upload one file per module, or use a URL.</p>
                     </div>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="rounded" />
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={lesson.isPreview}
+                        onChange={(e) => setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, isPreview: e.target.checked } : l))}
+                      />
                       <span className="text-slate-400 text-sm">Free preview lesson</span>
                     </label>
                   </div>
@@ -139,11 +330,17 @@ export default function CreateCourse() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }}
-            className={`btn-primary flex items-center gap-2 ${saved ? 'bg-emerald-600 hover:bg-emerald-600' : ''}`}>
-            <Save size={15} /> {saved ? 'Published!' : 'Publish Course'}
+          <button
+            onClick={handlePublish}
+            disabled={isSubmitting}
+            className={`btn-primary flex items-center gap-2 ${saved ? 'bg-emerald-600 hover:bg-emerald-600' : ''} ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''}`}
+          >
+            <Save size={15} />
+            {saved ? 'Published!' : (isSubmitting ? 'Publishing...' : 'Publish Course')}
           </button>
-          <button className="btn-secondary text-sm">Save as Draft</button>
+          <button className="btn-secondary text-sm" disabled>
+            Save as Draft
+          </button>
         </div>
       </div>
     </DashboardLayout>

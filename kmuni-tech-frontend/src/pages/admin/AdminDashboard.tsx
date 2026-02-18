@@ -1,17 +1,13 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
 import { Users, BookOpen, DollarSign, GraduationCap, TrendingUp, ShieldCheck, ArrowRight, AlertTriangle } from 'lucide-react';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import { formatINRCompact } from '../../utils/currency';
-
-const recentUsers = [
-  { name: 'Alex Johnson', email: 'alex@kmuni.com', role: 'student', joined: '2 hours ago', status: 'active' },
-  { name: 'Dr. Sarah Chen', email: 'sarah@kmuni.com', role: 'instructor', joined: '1 day ago', status: 'active' },
-  { name: 'Mike Torres', email: 'mike@kmuni.com', role: 'student', joined: '2 days ago', status: 'pending' },
-  { name: 'Priya Patel', email: 'priya@kmuni.com', role: 'student', joined: '3 days ago', status: 'active' },
-];
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { User } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { fetchAdminAnalytics, fetchAdminUsers } from '../../utils/api';
 
 const roleColors: Record<string, string> = {
   student: 'bg-emerald-500/15 text-emerald-400',
@@ -20,7 +16,61 @@ const roleColors: Record<string, string> = {
 };
 
 export default function AdminDashboard() {
-  const platformRevenue = 10624000; // approx conversion from $128K
+  const { token } = useAuth();
+  const [analytics, setAnalytics] = useState<{
+    totalUsers: number;
+    totalStudents: number;
+    totalInstructors: number;
+    totalCourses: number;
+    totalEnrollments: number;
+  } | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const platformRevenue = 0;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const [analyticsData, usersData] = await Promise.all([
+          fetchAdminAnalytics(token),
+          fetchAdminUsers(token),
+        ]);
+        if (!mounted) return;
+        setAnalytics(analyticsData);
+        setUsers(usersData);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load admin dashboard');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
+
+  const recentUsers = useMemo(() => users.slice(0, 4), [users]);
+
+  const timeAgo = (iso: string) => {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    if (days > 0) return `${days} day${days === 1 ? '' : 's'} ago`;
+    if (hours > 0) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    return 'just now';
+  };
   return (
     <DashboardLayout>
       <div className="mb-8">
@@ -39,10 +89,10 @@ export default function AdminDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={<Users size={18} />} label="Total Users" value="52,480" color="from-indigo-500 to-purple-500" sub="+340 this week" />
-        <StatCard icon={<GraduationCap size={18} />} label="Students" value="50,200" color="from-blue-500 to-cyan-500" />
-        <StatCard icon={<BookOpen size={18} />} label="Courses" value="214" color="from-emerald-500 to-teal-500" sub="12 pending review" />
-        <StatCard icon={<DollarSign size={18} />} label="Platform Revenue" value={formatINRCompact(platformRevenue)} color="from-orange-500 to-red-500" sub="+22% this month" />
+        <StatCard icon={<Users size={18} />} label="Total Users" value={analytics?.totalUsers ?? '—'} color="from-indigo-500 to-purple-500" />
+        <StatCard icon={<GraduationCap size={18} />} label="Students" value={analytics?.totalStudents ?? '—'} color="from-blue-500 to-cyan-500" />
+        <StatCard icon={<BookOpen size={18} />} label="Courses" value={analytics?.totalCourses ?? '—'} color="from-emerald-500 to-teal-500" />
+        <StatCard icon={<DollarSign size={18} />} label="Platform Revenue" value={platformRevenue === 0 ? '—' : formatINRCompact(platformRevenue)} color="from-orange-500 to-red-500" sub="Not available" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -53,8 +103,12 @@ export default function AdminDashboard() {
             <Link to="/admin/users" className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center gap-1">View all <ArrowRight size={13} /></Link>
           </div>
           <div className="space-y-3">
-            {recentUsers.map(u => (
-              <div key={u.email} className="flex items-center gap-3 p-3 bg-white/2 rounded-xl hover:bg-white/4 transition-all">
+            {isLoading ? (
+              <LoadingSpinner text="Loading users..." />
+            ) : loadError ? (
+              <p className="text-slate-400 text-sm">{loadError}</p>
+            ) : recentUsers.map(u => (
+              <div key={u.id} className="flex items-center gap-3 p-3 bg-white/2 rounded-xl hover:bg-white/4 transition-all">
                 <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                   {u.name.charAt(0)}
                 </div>
@@ -64,9 +118,9 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`badge ${roleColors[u.role]} text-[10px] capitalize`}>{u.role}</span>
-                  <span className={`badge text-[10px] capitalize ${u.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-400'}`}>{u.status}</span>
+                  <span className="badge text-[10px] capitalize bg-emerald-500/10 text-emerald-400">active</span>
                 </div>
-                <span className="text-slate-600 text-xs whitespace-nowrap">{u.joined}</span>
+                <span className="text-slate-600 text-xs whitespace-nowrap">{timeAgo(u.createdAt)}</span>
               </div>
             ))}
           </div>

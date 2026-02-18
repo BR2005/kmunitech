@@ -26,10 +26,20 @@ const thumbnailGradients = [
   'from-violet-600 to-indigo-600',
 ];
 
+function stringHash(value: string) {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash << 5) - hash + value.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
 export default function CourseCard({ course, showEnroll = true }: Props) {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const gradient = thumbnailGradients[parseInt(course.id) % thumbnailGradients.length];
+  const gradientIndex = course.id ? stringHash(course.id) % thumbnailGradients.length : 0;
+  const gradient = thumbnailGradients[gradientIndex];
 
   const handleAccess = () => {
     if (!isAuthenticated) { navigate('/login', { state: { from: `/courses/${course.id}` } }); return; }

@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { Search, Users, Key, Trash2, Edit3, UserPlus, CheckCircle, XCircle } from 'lucide-react';
-
-const mockUsers = [
-  { id: '1', name: 'Alex Johnson', email: 'alex@kmuni.com', role: 'student', status: 'active', joined: 'Jan 15, 2024' },
-  { id: '2', name: 'Dr. Sarah Chen', email: 'sarah@kmuni.com', role: 'instructor', status: 'active', joined: 'Jan 10, 2024' },
-  { id: '3', name: 'Mike Torres', email: 'mike@kmuni.com', role: 'student', status: 'pending', joined: 'Mar 1, 2024' },
-  { id: '4', name: 'Priya Patel', email: 'priya@kmuni.com', role: 'student', status: 'active', joined: 'Feb 22, 2024' },
-  { id: '5', name: 'James Wilson', email: 'james@kmuni.com', role: 'instructor', status: 'active', joined: 'Feb 5, 2024' },
-];
+import { Search, Key, Trash2, Edit3, UserPlus } from 'lucide-react';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { User } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { adminDeleteUser, adminResetUserPassword, fetchAdminUsers } from '../../utils/api';
 
 const roleColors: Record<string, string> = {
   student: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
@@ -17,14 +13,86 @@ const roleColors: Record<string, string> = {
 };
 
 export default function AdminUsers() {
+  const { token } = useAuth();
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [resetModal, setResetModal] = useState<string | null>(null);
   const [newPwd, setNewPwd] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [isWorking, setIsWorking] = useState(false);
 
-  const filtered = mockUsers.filter(u =>
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const data = await fetchAdminUsers(token);
+        if (!mounted) return;
+        setUsers(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load users');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
+
+  const selectedUser = useMemo(() => users.find(u => u.id === resetModal) || null, [users, resetModal]);
+
+  const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const formatJoined = (iso: string) => {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString();
+  };
+
+  const handleResetPassword = async () => {
+    if (!token || !resetModal) return;
+    if (!newPwd || newPwd.length < 6) {
+      setActionError('Password must be at least 6 characters.');
+      return;
+    }
+
+    try {
+      setActionError('');
+      setIsWorking(true);
+      await adminResetUserPassword(resetModal, newPwd, token);
+      setResetModal(null);
+      setNewPwd('');
+    } catch (e: any) {
+      setActionError(e?.message || 'Failed to reset password');
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!token) return;
+    try {
+      setActionError('');
+      setIsWorking(true);
+      await adminDeleteUser(userId, token);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+    } catch (e: any) {
+      setActionError(e?.message || 'Failed to delete user');
+    } finally {
+      setIsWorking(false);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -41,12 +109,25 @@ export default function AdminUsers() {
 
       {/* Table */}
       <div className="card overflow-hidden">
+        {actionError && !resetModal && (
+          <div className="px-5 py-3 border-b border-white/5 text-red-400 text-xs">
+            {actionError}
+          </div>
+        )}
+        {isLoading ? (
+          <div className="p-8">
+            <LoadingSpinner text="Loading users..." />
+          </div>
+        ) : loadError ? (
+          <div className="p-8">
+            <p className="text-slate-400 text-sm">{loadError}</p>
+          </div>
+        ) : (
         <table className="w-full">
           <thead>
             <tr className="border-b border-white/5">
               <th className="text-left px-5 py-4 text-slate-500 text-xs font-semibold uppercase tracking-wide">User</th>
               <th className="text-left px-5 py-4 text-slate-500 text-xs font-semibold uppercase tracking-wide hidden md:table-cell">Role</th>
-              <th className="text-left px-5 py-4 text-slate-500 text-xs font-semibold uppercase tracking-wide hidden lg:table-cell">Status</th>
               <th className="text-left px-5 py-4 text-slate-500 text-xs font-semibold uppercase tracking-wide hidden lg:table-cell">Joined</th>
               <th className="text-right px-5 py-4 text-slate-500 text-xs font-semibold uppercase tracking-wide">Actions</th>
             </tr>
@@ -65,13 +146,7 @@ export default function AdminUsers() {
                 <td className="px-5 py-4 hidden md:table-cell">
                   <span className={`badge ${roleColors[user.role]} capitalize text-xs`}>{user.role}</span>
                 </td>
-                <td className="px-5 py-4 hidden lg:table-cell">
-                  <span className={`flex items-center gap-1 text-xs font-medium ${user.status === 'active' ? 'text-emerald-400' : 'text-yellow-400'}`}>
-                    {user.status === 'active' ? <CheckCircle size={12} /> : <XCircle size={12} />}
-                    {user.status}
-                  </span>
-                </td>
-                <td className="px-5 py-4 text-slate-500 text-xs hidden lg:table-cell">{user.joined}</td>
+                <td className="px-5 py-4 text-slate-500 text-xs hidden lg:table-cell">{formatJoined(user.createdAt)}</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2 justify-end">
                     <button onClick={() => { setResetModal(user.id); setNewPwd(''); }}
@@ -79,13 +154,18 @@ export default function AdminUsers() {
                       <Key size={12} /> Reset PWD
                     </button>
                     <button className="p-1.5 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"><Edit3 size={14} /></button>
-                    <button className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={14} /></button>
+                    <button
+                      disabled={isWorking}
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    ><Trash2 size={14} /></button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* Reset Password Modal */}
@@ -94,15 +174,20 @@ export default function AdminUsers() {
           <div className="card p-6 w-full max-w-md animate-slide-up">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-orange-500/15 border border-orange-500/20 rounded-xl flex items-center justify-center"><Key size={18} className="text-orange-400" /></div>
-              <div><h3 className="text-white font-bold">Reset Password</h3><p className="text-slate-500 text-sm">For {mockUsers.find(u => u.id === resetModal)?.name}</p></div>
+              <div><h3 className="text-white font-bold">Reset Password</h3><p className="text-slate-500 text-sm">For {selectedUser?.name}</p></div>
             </div>
             <div className="mb-5">
               <label className="block text-slate-300 text-sm font-medium mb-2">New Password</label>
               <input type="password" value={newPwd} onChange={e => setNewPwd(e.target.value)} placeholder="Enter new password" className="input-field" />
             </div>
+            {actionError && <p className="text-red-400 text-xs mb-4">{actionError}</p>}
             <div className="flex gap-3">
               <button onClick={() => setResetModal(null)} className="flex-1 btn-secondary text-sm py-2.5">Cancel</button>
-              <button onClick={() => { setResetModal(null); }} className="flex-1 btn-primary text-sm py-2.5">Reset Password</button>
+              <button
+                disabled={isWorking}
+                onClick={handleResetPassword}
+                className="flex-1 btn-primary text-sm py-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              >Reset Password</button>
             </div>
           </div>
         </div>

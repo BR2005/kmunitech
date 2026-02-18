@@ -36,17 +36,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemo = (role: 'student' | 'instructor' | 'admin') => {
-    const demos: Record<string, string> = {
-      student: 'student@kmuni.com',
-      instructor: 'instructor@kmuni.com',
-      admin: 'admin@isquare.com',
-    };
-    setEmail(demos[role]);
-    setPassword('password123');
-    setError('');
-  };
-
   return (
     <div className="min-h-screen bg-[#0d0f1a] flex">
       {/* Left Panel */}
@@ -291,27 +280,6 @@ export default function LoginPage() {
             Enter your credentials to access your account
           </p>
 
-          {/* Demo Accounts */}
-          <div className="mb-6 p-4 bg-indigo-500/8 border border-indigo-500/20 rounded-2xl">
-            <p className="text-indigo-300 text-xs font-semibold mb-2 uppercase tracking-wide">
-              Demo Accounts
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {(['student', 'instructor', 'admin'] as const).map((role) => (
-                <button
-                  key={role}
-                  onClick={() => fillDemo(role)}
-                  className="px-3 py-1.5 bg-white/5 hover:bg-indigo-500/20 border border-white/10 hover:border-indigo-500/30 rounded-lg text-xs text-slate-300 hover:text-white transition-all capitalize"
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
-            <p className="text-slate-500 text-xs mt-2">
-              Password: <code className="text-indigo-300">password123</code>
-            </p>
-          </div>
-
           {error && (
             <div className="flex items-center gap-2.5 p-4 bg-red-500/10 border border-red-500/20 rounded-xl mb-5 text-red-400 text-sm">
               <AlertCircle size={16} className="flex-shrink-0" />
@@ -392,16 +360,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          <div className="mt-8 p-4 bg-amber-500/8 border border-amber-500/20 rounded-xl">
-            <p className="text-amber-300 text-xs font-semibold mb-1">
-              🔒 Admin Login
-            </p>
-            <p className="text-slate-500 text-xs">
-              Admin accounts are provisioned by ISquare Tech Solutions. The
-              login page does not expose an admin option publicly — use your
-              admin email directly.
-            </p>
-          </div>
         </div>
       </div>
     </div>

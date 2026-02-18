@@ -4,12 +4,20 @@ import com.kmunitech.backend.dto.AuthDTOs.*;
 import com.kmunitech.backend.dto.CourseDTOs.*;
 import com.kmunitech.backend.security.CustomUserDetailsService;
 import com.kmunitech.backend.service.CourseService;
+import com.kmunitech.backend.service.VideoStorageService;
 import com.kmunitech.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.kmunitech.backend.entity.Lesson;
+import com.kmunitech.backend.exception.ForbiddenException;
+import com.kmunitech.backend.exception.ResourceNotFoundException;
+import com.kmunitech.backend.repository.LessonRepository;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +32,8 @@ public class InstructorController {
     private final CourseService courseService;
     private final UserService userService;
     private final CustomUserDetailsService userDetailsService;
+    private final LessonRepository lessonRepository;
+    private final VideoStorageService videoStorageService;
     
     @GetMapping("/courses")
     public ResponseEntity<List<CourseListDTO>> getInstructorCourses(Authentication authentication) {
@@ -37,6 +47,32 @@ public class InstructorController {
             Authentication authentication) {
         var user = userDetailsService.getUserByEmail(authentication.getName());
         return ResponseEntity.ok(courseService.createCourse(request, user));
+    }
+
+    @PostMapping(value = "/lessons/{lessonId}/video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, String>> uploadLessonVideo(
+            @PathVariable UUID lessonId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+
+        var user = userDetailsService.getUserByEmail(authentication.getName());
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found"));
+
+        // Only the course instructor (or admin via admin endpoints) can upload
+        if (user.getRole() != com.kmunitech.backend.entity.User.UserRole.INSTRUCTOR
+                || !lesson.getCourse().getInstructor().getId().equals(user.getId())) {
+            throw new ForbiddenException("You can only upload videos for your own lessons");
+        }
+
+        String key = videoStorageService.saveLessonVideo(lessonId, file);
+        lesson.setVideoUrl("local:" + key);
+        lessonRepository.save(lesson);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Video uploaded successfully");
+        response.put("lessonId", lessonId.toString());
+        return ResponseEntity.ok(response);
     }
     
     @PutMapping("/courses/{id}")

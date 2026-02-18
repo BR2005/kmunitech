@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { User, AuthState, LoginCredentials, SignupData } from '../types';
+import { fetchCurrentUser, loginUser, signupUser } from '../utils/api';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; message: string }>;
@@ -35,61 +36,63 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo — replace login/signup bodies with real Spring Boot API calls
-const MOCK_USERS: User[] = [
-  { id: '1', name: 'Alex Johnson', email: 'student@kmuni.com', role: 'student', createdAt: '2024-01-15' },
-  { id: '2', name: 'Dr. Sarah Chen', email: 'instructor@kmuni.com', role: 'instructor', createdAt: '2024-01-10' },
-  { id: '3', name: 'Admin User', email: 'admin@isquare.com', role: 'admin', createdAt: '2024-01-01' },
-];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('kmuni_token');
-    const savedUser = localStorage.getItem('kmuni_user');
-    if (savedToken && savedUser) {
-      try {
-        const user = JSON.parse(savedUser) as User;
-        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: savedToken } });
-      } catch {
-        dispatch({ type: 'SET_LOADING', payload: false });
+    const bootstrap = async () => {
+      if (savedToken) {
+        try {
+          const user = await fetchCurrentUser(savedToken);
+          localStorage.setItem('kmuni_user', JSON.stringify(user));
+          dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: savedToken } });
+          return;
+        } catch (error) {
+          console.warn('Failed to restore session', error);
+          localStorage.removeItem('kmuni_token');
+          localStorage.removeItem('kmuni_user');
+        }
       }
-    } else {
       dispatch({ type: 'SET_LOADING', payload: false });
-    }
+    };
+    bootstrap();
   }, []);
 
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'SET_LOADING', payload: true });
-    // TODO: Replace with → const res = await fetch('/api/auth/login', { method:'POST', body: JSON.stringify(credentials) })
-    await new Promise(r => setTimeout(r, 800));
-    const user = MOCK_USERS.find(u => u.email === credentials.email);
-    if (user && credentials.password === 'password123') {
-      const token = `mock-jwt-${user.id}`;
-      localStorage.setItem('kmuni_token', token);
-      localStorage.setItem('kmuni_user', JSON.stringify(user));
-      dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token } });
-      return { success: true, message: 'Login successful!' };
+    try {
+      const res = await loginUser(credentials);
+      if (!res.success || !res.user || !res.token) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return { success: false, message: res.message || 'Invalid email or password.' };
+      }
+      localStorage.setItem('kmuni_token', res.token);
+      localStorage.setItem('kmuni_user', JSON.stringify(res.user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: res.user, token: res.token } });
+      return { success: true, message: res.message || 'Login successful!' };
+    } catch (error: any) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return { success: false, message: error?.message || 'Login failed. Please try again.' };
     }
-    dispatch({ type: 'SET_LOADING', payload: false });
-    return { success: false, message: 'Invalid email or password.' };
   };
 
   const signup = async (data: SignupData) => {
     dispatch({ type: 'SET_LOADING', payload: true });
-    // TODO: Replace with → const res = await fetch('/api/auth/signup', { method:'POST', body: JSON.stringify(data) })
-    await new Promise(r => setTimeout(r, 1000));
-    if (data.password !== data.confirmPassword) {
+    try {
+      const res = await signupUser(data);
+      if (!res.success || !res.user || !res.token) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return { success: false, message: res.message || 'Signup failed.' };
+      }
+      localStorage.setItem('kmuni_token', res.token);
+      localStorage.setItem('kmuni_user', JSON.stringify(res.user));
+      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: res.user, token: res.token } });
+      return { success: true, message: res.message || 'Account created successfully!' };
+    } catch (error: any) {
       dispatch({ type: 'SET_LOADING', payload: false });
-      return { success: false, message: 'Passwords do not match.' };
+      return { success: false, message: error?.message || 'Signup failed. Please try again.' };
     }
-    const newUser: User = { id: Date.now().toString(), name: data.name, email: data.email, role: data.role, createdAt: new Date().toISOString() };
-    const token = `mock-jwt-${newUser.id}`;
-    localStorage.setItem('kmuni_token', token);
-    localStorage.setItem('kmuni_user', JSON.stringify(newUser));
-    dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser, token } });
-    return { success: true, message: 'Account created successfully!' };
   };
 
   const logout = () => {

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class CourseDTOs {
                 course.getPrice(),
                 course.getLevel().name().toLowerCase(),
                 course.getCategory().name().toLowerCase().replace("_", "-"),
-                course.getTags(),
+                course.getTags() == null ? List.of() : new ArrayList<>(course.getTags()),
                 course.getLessons().stream()
                     .map(LessonDTO::fromEntity)
                     .collect(Collectors.toList()),
@@ -88,7 +89,7 @@ public class CourseDTOs {
                 course.getPrice(),
                 course.getLevel().name().toLowerCase(),
                 course.getCategory().name().toLowerCase().replace("_", "-"),
-                course.getTags(),
+                course.getTags() == null ? List.of() : new ArrayList<>(course.getTags()),
                 course.getTotalDuration(),
                 course.getRating(),
                 course.getStudentsCount(),

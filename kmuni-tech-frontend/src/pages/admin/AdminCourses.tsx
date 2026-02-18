@@ -1,15 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import { CheckCircle, XCircle, Eye, Trash2, Star, Users } from 'lucide-react';
 import { formatPriceINR } from '../../utils/currency';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Course } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { fetchAdminCourses } from '../../utils/api';
 
 export default function AdminCourses() {
+  const { token } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const data = await fetchAdminCourses(token);
+        if (!mounted) return;
+        setCourses(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load courses');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
+
   return (
     <DashboardLayout>
       <div className="mb-8"><h1 className="text-2xl font-bold text-white">Course Management</h1><p className="text-slate-400 mt-1">Review, approve, and manage all platform courses</p></div>
       <div className="space-y-3">
-        {MOCK_COURSES.map(course => (
+        {isLoading ? (
+          <div className="py-10">
+            <LoadingSpinner text="Loading courses..." />
+          </div>
+        ) : loadError ? (
+          <p className="text-slate-400 text-sm">{loadError}</p>
+        ) : courses.map(course => (
           <div key={course.id} className="card p-4 hover:border-white/15 transition-all">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">

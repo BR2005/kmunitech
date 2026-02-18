@@ -1,21 +1,141 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { Star, Users, Clock, Play, Lock, CheckCircle, BookOpen, ChevronRight, Award } from 'lucide-react';
 import { formatPriceINR } from '../../utils/currency';
+import { enrollInCourse, fetchCourseById, fetchLessonPlaybackUrl, fetchStudentEnrollments, updateEnrollmentProgress } from '../../utils/api';
+import { Course } from '../../types';
 
 export default function CourseDetailPage() {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token, user } = useAuth();
   const navigate = useNavigate();
-  const course = MOCK_COURSES.find(c => c.id === id);
+
+  const [course, setCourse] = useState<Course | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [enrollError, setEnrollError] = useState('');
+
+  const [enrollmentId, setEnrollmentId] = useState<string | null>(null);
+  const [enrollmentProgress, setEnrollmentProgress] = useState<number | null>(null);
+
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [playbackUrl, setPlaybackUrl] = useState<string>('');
+  const [isLoadingPlayback, setIsLoadingPlayback] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string>('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!id) {
+        setIsLoading(false);
+        setLoadError('Invalid course id');
+        return;
+      }
+      try {
+        setLoadError('');
+        const data = await fetchCourseById(id, token ?? undefined);
+        if (!mounted) return;
+        setCourse(data);
+
+        // If student is authenticated, also load enrollment to unlock lessons + track progress
+        if (token && mounted) {
+          try {
+            const enrollments = await fetchStudentEnrollments(token);
+            if (!mounted) return;
+            const enrollment = enrollments.find(e => e.courseId === id);
+            setEnrollmentId(enrollment?.id ?? null);
+            setEnrollmentProgress(enrollment?.progress ?? null);
+          } catch {
+            // ignore: user might not be a student or endpoint may fail
+            setEnrollmentId(null);
+            setEnrollmentProgress(null);
+          }
+        } else {
+          setEnrollmentId(null);
+          setEnrollmentProgress(null);
+        }
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load course');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [id, token]);
+
+  const canAccessAllLessons = useMemo(() => {
+    if (!course) return false;
+    if (!isAuthenticated) return false;
+    if (user?.role === 'admin') return true;
+    if (user?.role === 'instructor' && user?.id && course.instructorId && user.id === course.instructorId) return true;
+    if (user?.role === 'student' && Boolean(enrollmentId)) return true;
+    return false;
+  }, [course, enrollmentId, isAuthenticated, user?.id, user?.role]);
+
+  const loadLessonPlayback = async (lessonId: string) => {
+    if (!token) {
+      setPlaybackError('Please login to watch lessons.');
+      return;
+    }
+    try {
+      setPlaybackError('');
+      setIsLoadingPlayback(true);
+      const url = await fetchLessonPlaybackUrl(lessonId, token);
+      setPlaybackUrl(url);
+      setActiveLessonId(lessonId);
+    } catch (e: any) {
+      setPlaybackError(e?.message || 'Failed to load lesson video');
+      setPlaybackUrl('');
+      setActiveLessonId(lessonId);
+    } finally {
+      setIsLoadingPlayback(false);
+    }
+  };
+
+  const handleLessonEnded = async () => {
+    if (!token || !enrollmentId || !course || !activeLessonId) return;
+    if (course.lessons.length === 0) return;
+
+    const idx = course.lessons.findIndex(l => l.id === activeLessonId);
+    if (idx < 0) return;
+
+    const progress = Math.max(0, Math.min(100, Math.round(((idx + 1) / course.lessons.length) * 100)));
+    try {
+      const updated = await updateEnrollmentProgress(enrollmentId, progress, token);
+      setEnrollmentProgress(updated.progress);
+    } catch {
+      // progress update is best-effort
+    }
+  };
+
+  const stringHash = (value: string) => {
+    let hash = 0;
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0d0f1a] flex items-center justify-center">
+        <LoadingSpinner text="Loading course..." />
+      </div>
+    );
+  }
 
   if (!course) return (
     <div className="min-h-screen bg-[#0d0f1a] flex items-center justify-center">
       <div className="text-center"><p className="text-2xl text-white mb-4">Course not found</p>
+        {loadError && <p className="text-slate-500 text-sm mb-4">{loadError}</p>}
         <Link to="/courses" className="btn-primary">Browse Courses</Link></div>
     </div>
   );
@@ -26,7 +146,34 @@ export default function CourseDetailPage() {
   };
 
   const gradients = ['from-indigo-600 to-purple-700','from-blue-600 to-cyan-600','from-emerald-600 to-teal-600','from-orange-600 to-red-600','from-pink-600 to-rose-600','from-violet-600 to-indigo-600'];
-  const gradient = gradients[parseInt(course.id) % gradients.length];
+  const gradient = gradients[course.id ? stringHash(course.id) % gradients.length : 0];
+
+  const handleEnroll = async () => {
+    if (!id) return;
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/courses/${id}` } });
+      return;
+    }
+    if (!token) {
+      setEnrollError('Missing session token. Please login again.');
+      return;
+    }
+
+    try {
+      setEnrollError('');
+      setIsEnrolling(true);
+      await enrollInCourse(id, token);
+      // Stay on page so the student can start learning immediately
+      const enrollments = await fetchStudentEnrollments(token);
+      const enrollment = enrollments.find(e => e.courseId === id);
+      setEnrollmentId(enrollment?.id ?? null);
+      setEnrollmentProgress(enrollment?.progress ?? null);
+    } catch (e: any) {
+      setEnrollError(e?.message || 'Enrollment failed');
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0d0f1a]">
@@ -60,6 +207,77 @@ export default function CourseDetailPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
+            {/* Lesson Player (enrolled students / course owner) */}
+            {course.lessons.length > 0 && isAuthenticated && (
+              <div className="card p-6">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className="text-white font-bold text-xl">Lesson Player</h2>
+                    {user?.role === 'student' && (
+                      <p className="text-slate-500 text-sm mt-1">
+                        {enrollmentId ? `Progress: ${enrollmentProgress ?? 0}%` : 'Enroll to unlock full lessons.'}
+                      </p>
+                    )}
+                  </div>
+                  {!canAccessAllLessons && (
+                    <div className="text-slate-500 text-sm flex items-center gap-2">
+                      <Lock size={14} /> Locked
+                    </div>
+                  )}
+                </div>
+
+                {playbackError && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-200 rounded-xl p-3 text-sm mb-4">
+                    {playbackError}
+                  </div>
+                )}
+
+                <div className="bg-black/30 border border-white/10 rounded-2xl overflow-hidden">
+                  {playbackUrl ? (
+                    <video
+                      key={playbackUrl}
+                      src={playbackUrl}
+                      controls
+                      className="w-full h-[280px] md:h-[360px] bg-black"
+                      onEnded={handleLessonEnded}
+                    />
+                  ) : (
+                    <div className="w-full h-[280px] md:h-[360px] flex items-center justify-center text-slate-500 text-sm">
+                      {isLoadingPlayback ? 'Loading video...' : 'Select a lesson to start watching.'}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {course.lessons.map((lesson, idx) => {
+                    const locked = !canAccessAllLessons;
+                    const isActive = activeLessonId === lesson.id;
+                    return (
+                      <button
+                        key={lesson.id}
+                        type="button"
+                        disabled={locked || isLoadingPlayback}
+                        onClick={() => loadLessonPlayback(lesson.id)}
+                        className={`w-full text-left flex items-center justify-between gap-4 p-3 rounded-xl border transition-all ${
+                          locked
+                            ? 'bg-white/2 border-white/5 opacity-60 cursor-not-allowed'
+                            : isActive
+                              ? 'bg-white/5 border-indigo-500/30'
+                              : 'bg-white/3 border-white/10 hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{idx + 1}. {lesson.title}</p>
+                          <p className="text-slate-500 text-xs truncate">{lesson.duration}m</p>
+                        </div>
+                        {locked ? <Lock size={14} className="text-slate-500 flex-shrink-0" /> : <Play size={14} className="text-indigo-400 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* What you'll learn */}
             <div className="card p-6">
               <h2 className="text-white font-bold text-xl mb-5">What you'll learn</h2>
@@ -137,14 +355,28 @@ export default function CourseDetailPage() {
               </div>
 
               {isAuthenticated ? (
-                <button className="btn-primary w-full py-3.5 mb-3 flex items-center justify-center gap-2">
-                  {course.price === 0 ? <><BookOpen size={17} /> Enroll for Free</> : <><Award size={17} /> Enroll Now</>}
+                <button
+                  onClick={handleEnroll}
+                  disabled={isEnrolling}
+                  className="btn-primary w-full py-3.5 mb-3 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isEnrolling ? (
+                    <>Enrolling...</>
+                  ) : course.price === 0 ? (
+                    <><BookOpen size={17} /> Enroll for Free</>
+                  ) : (
+                    <><Award size={17} /> Enroll Now</>
+                  )}
                 </button>
               ) : (
                 <button onClick={() => navigate('/login', { state: { from: `/courses/${course.id}` } })}
                   className="btn-primary w-full py-3.5 mb-3 flex items-center justify-center gap-2">
                   <Lock size={16} /> Sign in to Enroll
                 </button>
+              )}
+
+              {enrollError && (
+                <p className="text-red-400 text-xs mb-3">{enrollError}</p>
               )}
 
               {!isAuthenticated && (

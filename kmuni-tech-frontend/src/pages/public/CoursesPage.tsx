@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import CourseCard from '../../components/common/CourseCard';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
-import { CourseCategory, CourseLevel } from '../../types';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Course, CourseCategory, CourseLevel } from '../../types';
+import { fetchCourses } from '../../utils/api';
 
 const categories: { value: string; label: string }[] = [
   { value: 'all', label: 'All Categories' },
@@ -25,30 +26,52 @@ const levels = [
 ];
 
 export default function CoursesPage() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
   const [level, setLevel] = useState('all');
   const [priceFilter, setPriceFilter] = useState('all');
   const [sortBy, setSortBy] = useState('featured');
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadError('');
+        const data = await fetchCourses();
+        if (!mounted) return;
+        setCourses(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load courses');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   const filtered = useMemo(() => {
-    let courses = [...MOCK_COURSES];
-    if (search) courses = courses.filter(c =>
+    let coursesResult = [...courses];
+    if (search) coursesResult = coursesResult.filter(c =>
       c.title.toLowerCase().includes(search.toLowerCase()) ||
       c.description.toLowerCase().includes(search.toLowerCase()) ||
       c.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
     );
-    if (category !== 'all') courses = courses.filter(c => c.category === category);
-    if (level !== 'all') courses = courses.filter(c => c.level === level);
-    if (priceFilter === 'free') courses = courses.filter(c => c.price === 0);
-    if (priceFilter === 'paid') courses = courses.filter(c => c.price > 0);
-    if (sortBy === 'featured') courses.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
-    if (sortBy === 'rating') courses.sort((a, b) => b.rating - a.rating);
-    if (sortBy === 'students') courses.sort((a, b) => b.studentsCount - a.studentsCount);
-    if (sortBy === 'price-low') courses.sort((a, b) => a.price - b.price);
-    if (sortBy === 'price-high') courses.sort((a, b) => b.price - a.price);
-    return courses;
-  }, [search, category, level, priceFilter, sortBy]);
+    if (category !== 'all') coursesResult = coursesResult.filter(c => c.category === category);
+    if (level !== 'all') coursesResult = coursesResult.filter(c => c.level === level);
+    if (priceFilter === 'free') coursesResult = coursesResult.filter(c => c.price === 0);
+    if (priceFilter === 'paid') coursesResult = coursesResult.filter(c => c.price > 0);
+    if (sortBy === 'featured') coursesResult.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured));
+    if (sortBy === 'rating') coursesResult.sort((a, b) => b.rating - a.rating);
+    if (sortBy === 'students') coursesResult.sort((a, b) => b.studentsCount - a.studentsCount);
+    if (sortBy === 'price-low') coursesResult.sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-high') coursesResult.sort((a, b) => b.price - a.price);
+    return coursesResult;
+  }, [courses, search, category, level, priceFilter, sortBy]);
 
   return (
     <div className="min-h-screen bg-[#0d0f1a]">
@@ -105,7 +128,16 @@ export default function CoursesPage() {
           <p className="text-slate-500 text-sm mb-6">{filtered.length} courses found</p>
 
           {/* Grid */}
-          {filtered.length > 0 ? (
+          {isLoading ? (
+            <div className="py-20">
+              <LoadingSpinner text="Loading courses..." />
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-20">
+              <p className="text-white font-semibold text-xl mb-2">Failed to load courses</p>
+              <p className="text-slate-500 text-sm">{loadError}</p>
+            </div>
+          ) : filtered.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map(course => <CourseCard key={course.id} course={course} />)}
             </div>

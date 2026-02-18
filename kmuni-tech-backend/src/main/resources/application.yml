@@ -1,6 +1,12 @@
 spring:
   application:
     name: kmuni-tech-backend
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
   
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/kmunitech}
@@ -40,6 +46,12 @@ cors:
   allowed-methods: GET,POST,PUT,DELETE,OPTIONS
   allowed-headers: "*"
   allow-credentials: true
+
+# Media (local dev storage + signed playback URLs)
+media:
+  storage-dir: ${MEDIA_STORAGE_DIR:./uploads}
+  signing-secret: ${MEDIA_SIGNING_SECRET:kmuni-tech-media-dev-secret-change-in-production}
+  playback-ttl-seconds: ${MEDIA_PLAYBACK_TTL_SECONDS:600}
 
 # Logging
 logging:

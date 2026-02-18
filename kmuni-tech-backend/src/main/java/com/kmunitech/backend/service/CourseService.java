@@ -25,24 +25,28 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final LessonRepository lessonRepository;
     
+    @Transactional(readOnly = true)
     public List<CourseListDTO> getAllCourses() {
         return courseRepository.findAll().stream()
                 .map(CourseListDTO::fromEntity)
                 .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public CourseDTO getCourseById(UUID id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + id));
         return CourseDTO.fromEntity(course);
     }
     
+    @Transactional(readOnly = true)
     public List<CourseListDTO> getFeaturedCourses() {
         return courseRepository.findByIsFeaturedTrue().stream()
                 .map(CourseListDTO::fromEntity)
                 .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public List<CourseListDTO> getInstructorCourses(UUID instructorId) {
         return courseRepository.findByInstructorId(instructorId).stream()
                 .map(CourseListDTO::fromEntity)
@@ -92,6 +96,8 @@ public class CourseService {
                 lesson.setContent(lessonReq.getContent());
                 lesson.setCourse(course);
                 lessonRepository.save(lesson);
+                // Keep the bidirectional relationship consistent so the response contains lessons
+                course.getLessons().add(lesson);
             }
         }
         

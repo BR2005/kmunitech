@@ -1,12 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import { PlusCircle, Users, Star, Edit3, Eye, Trash2 } from 'lucide-react';
 import { formatPriceINR } from '../../utils/currency';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Course } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { fetchInstructorCourses } from '../../utils/api';
 
 export default function InstructorCourses() {
-  const courses = MOCK_COURSES.slice(0, 2);
+  const { token } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const data = await fetchInstructorCourses(token);
+        if (!mounted) return;
+        setCourses(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load instructor courses');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
+
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-8">
@@ -14,7 +45,15 @@ export default function InstructorCourses() {
         <Link to="/instructor/create-course" className="btn-primary flex items-center gap-2 text-sm"><PlusCircle size={15} /> New Course</Link>
       </div>
       <div className="space-y-4">
-        {courses.map((course, i) => (
+        {isLoading ? (
+          <div className="py-10">
+            <LoadingSpinner text="Loading your courses..." />
+          </div>
+        ) : loadError ? (
+          <p className="text-slate-400 text-sm">{loadError}</p>
+        ) : courses.length === 0 ? (
+          <p className="text-slate-400 text-sm">No courses created yet.</p>
+        ) : courses.map((course, i) => (
           <div key={course.id} className="card p-5 hover:border-white/15 transition-all">
             <div className="flex flex-col md:flex-row md:items-center gap-4">
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0 bg-gradient-to-br ${['from-indigo-500 to-purple-500','from-orange-500 to-red-500'][i]}`}>

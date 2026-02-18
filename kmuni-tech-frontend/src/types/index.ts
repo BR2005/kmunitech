@@ -68,3 +68,14 @@ export interface Activity {
   description: string;
   timestamp: string;
 }
+
+export interface Enrollment {
+  id: string;
+  courseId: string;
+  courseTitle: string;
+  courseThumbnail: string;
+  instructorName: string;
+  progress: number;
+  enrolledAt: string;
+  completedAt: string | null;
+}

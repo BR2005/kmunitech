@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Play, Star, Users, BookOpen, Zap, Shield, Award, TrendingUp, CheckCircle, ChevronRight } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import CourseCard from '../../components/common/CourseCard';
-import { MOCK_COURSES } from '../../data/mockCourses';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { formatINRCompact, formatPriceINR } from '../../utils/currency';
+import { fetchFeaturedCourses } from '../../utils/api';
+import { Course } from '../../types';
 
 const stats = [
   { value: '50K+', label: 'Students Enrolled', icon: Users },
@@ -23,9 +25,30 @@ const features = [
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const featuredCourses = MOCK_COURSES.filter(c => c.isFeatured);
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+  const [featuredError, setFeaturedError] = useState('');
   const revenueThisMonth = 355240; // approx conversion from $4,280
   const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setFeaturedError('');
+        const data = await fetchFeaturedCourses();
+        if (!mounted) return;
+        setFeaturedCourses(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setFeaturedError(e?.message || 'Failed to load featured courses');
+      } finally {
+        if (!mounted) return;
+        setIsLoadingFeatured(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0d0f1a]">
@@ -128,7 +151,17 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredCourses.map(course => <CourseCard key={course.id} course={course} />)}
+          {isLoadingFeatured ? (
+            <div className="col-span-full py-10">
+              <LoadingSpinner text="Loading featured courses..." />
+            </div>
+          ) : featuredError ? (
+            <div className="col-span-full text-center py-10">
+              <p className="text-slate-400 text-sm">{featuredError}</p>
+            </div>
+          ) : (
+            featuredCourses.map(course => <CourseCard key={course.id} course={course} />)
+          )}
         </div>
 
         <div className="text-center mt-8 md:hidden">

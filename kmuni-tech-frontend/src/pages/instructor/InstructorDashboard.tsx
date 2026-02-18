@@ -1,16 +1,51 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
 import { BookOpen, Users, DollarSign, Star, PlusCircle, BarChart3, TrendingUp, ArrowRight } from 'lucide-react';
-import { MOCK_COURSES } from '../../data/mockCourses';
 import { formatINRCompact, formatPriceINR } from '../../utils/currency';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { Course } from '../../types';
+import { fetchInstructorAnalytics, fetchInstructorCourses } from '../../utils/api';
 
 export default function InstructorDashboard() {
-  const { user } = useAuth();
-  const myCourses = MOCK_COURSES.slice(0, 2);
-  const revenueThisMonth = 355240; // approx conversion from $4,280
+  const { user, token } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [analytics, setAnalytics] = useState<{ totalCourses: number; totalStudents: number; averageRating: number } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!token) {
+        setIsLoading(false);
+        setLoadError('Not authenticated');
+        return;
+      }
+      try {
+        setLoadError('');
+        const [coursesData, analyticsData] = await Promise.all([
+          fetchInstructorCourses(token),
+          fetchInstructorAnalytics(token),
+        ]);
+        if (!mounted) return;
+        setCourses(coursesData);
+        setAnalytics(analyticsData);
+      } catch (e: any) {
+        if (!mounted) return;
+        setLoadError(e?.message || 'Failed to load instructor dashboard');
+      } finally {
+        if (!mounted) return;
+        setIsLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [token]);
+
+  const myCourses = useMemo(() => courses.slice(0, 2), [courses]);
+  const revenueThisMonth = 0;
 
   return (
     <DashboardLayout>
@@ -23,10 +58,10 @@ export default function InstructorDashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={<BookOpen size={18} />} label="Total Courses" value="2" color="from-indigo-500 to-purple-500" />
-        <StatCard icon={<Users size={18} />} label="Total Students" value="5,090" color="from-blue-500 to-cyan-500" sub="+12% this month" />
-        <StatCard icon={<DollarSign size={18} />} label="Revenue" value={formatINRCompact(revenueThisMonth)} color="from-emerald-500 to-teal-500" sub="This month" />
-        <StatCard icon={<Star size={18} />} label="Avg Rating" value="4.8" color="from-amber-500 to-orange-500" />
+        <StatCard icon={<BookOpen size={18} />} label="Total Courses" value={analytics?.totalCourses ?? '—'} color="from-indigo-500 to-purple-500" />
+        <StatCard icon={<Users size={18} />} label="Total Students" value={analytics?.totalStudents ?? '—'} color="from-blue-500 to-cyan-500" />
+        <StatCard icon={<DollarSign size={18} />} label="Revenue" value={revenueThisMonth === 0 ? '—' : formatINRCompact(revenueThisMonth)} color="from-emerald-500 to-teal-500" sub="Not available" />
+        <StatCard icon={<Star size={18} />} label="Avg Rating" value={analytics?.averageRating ?? '—'} color="from-amber-500 to-orange-500" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -39,7 +74,13 @@ export default function InstructorDashboard() {
             </Link>
           </div>
           <div className="space-y-4">
-            {myCourses.map((course, i) => (
+            {isLoading ? (
+              <LoadingSpinner text="Loading..." />
+            ) : loadError ? (
+              <p className="text-slate-400 text-sm">{loadError}</p>
+            ) : myCourses.length === 0 ? (
+              <p className="text-slate-400 text-sm">No courses created yet.</p>
+            ) : myCourses.map((course, i) => (
               <div key={course.id} className="flex items-center gap-4 p-4 bg-white/3 rounded-2xl">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 bg-gradient-to-br ${
                   ['from-indigo-500 to-purple-500','from-orange-500 to-red-500'][i]
