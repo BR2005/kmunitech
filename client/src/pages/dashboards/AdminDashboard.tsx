@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     }, []);
 
     const startReset = (userId: string) => {
-        setResetUserId(userId);
+        setResetUserId((current) => (current === userId ? '' : userId));
         setNewPassword('');
         setResetError('');
         setResetSuccess('');
@@ -126,57 +126,61 @@ export default function AdminDashboard() {
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {loadingUsers ? (
-                                        <tr><td colSpan={4} className="px-4 py-6"><div className="glass-light rounded-xl h-10 animate-shimmer" /></td></tr>
+                                        <tr><td colSpan={5} className="px-4 py-6"><div className="glass-light rounded-xl h-10 animate-shimmer" /></td></tr>
                                     ) : instructors.length === 0 ? (
-                                        <tr><td colSpan={4} className="px-4 py-6 text-sm text-dark-500">No instructors found</td></tr>
+                                        <tr><td colSpan={5} className="px-4 py-6 text-sm text-dark-500">No instructors found</td></tr>
                                     ) : (
                                         instructors.map((u) => (
-                                            <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                                                <td className="px-4 py-3 text-sm text-white font-medium">
-                                                    {u.name}
-                                                    {resetUserId === u.id && (
-                                                        <div className="mt-2 flex flex-col sm:flex-row gap-2">
-                                                            <input
-                                                                type="password"
-                                                                value={newPassword}
-                                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                                className="input-modern !h-10 !py-2 !pl-3 !text-sm"
-                                                                placeholder="New password (min 6 chars)"
-                                                            />
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={resetSaving || newPassword.trim().length < 6}
-                                                                    onClick={submitReset}
-                                                                    className="btn-primary !py-2 !px-4 text-sm disabled:opacity-60"
-                                                                >
-                                                                    {resetSaving ? 'Saving...' : 'Save'}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={resetSaving}
-                                                                    onClick={cancelReset}
-                                                                    className="btn-ghost !py-2 !px-4 text-sm disabled:opacity-60"
-                                                                >
-                                                                    Cancel
-                                                                </button>
+                                            <>
+                                                <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="px-4 py-3 text-sm text-white font-medium">{u.name}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-300">{u.email}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-300 capitalize">{u.role}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-400">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => startReset(u.id)}
+                                                            className="btn-ghost text-sm !py-2"
+                                                        >
+                                                            Reset password
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {resetUserId === u.id && (
+                                                    <tr key={`${u.id}-reset`} className="bg-white/[0.01]">
+                                                        <td colSpan={5} className="px-4 py-4">
+                                                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                                                <input
+                                                                    type="password"
+                                                                    value={newPassword}
+                                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                                    className="input-modern !h-10 !py-2 !pl-3 !text-sm"
+                                                                    placeholder="New password (min 6 chars)"
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={resetSaving || newPassword.trim().length < 6}
+                                                                        onClick={submitReset}
+                                                                        className="btn-primary !py-2 !px-4 text-sm disabled:opacity-60"
+                                                                    >
+                                                                        {resetSaving ? 'Saving...' : 'Save'}
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={resetSaving}
+                                                                        onClick={cancelReset}
+                                                                        className="btn-ghost !py-2 !px-4 text-sm disabled:opacity-60"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-dark-300">{u.email}</td>
-                                                <td className="px-4 py-3 text-sm text-dark-300 capitalize">{u.role}</td>
-                                                <td className="px-4 py-3 text-sm text-dark-400">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
-                                                <td className="px-4 py-3 text-right">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => startReset(u.id)}
-                                                        className="btn-ghost text-sm !py-2"
-                                                    >
-                                                        Reset password
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </>
                                         ))
                                     )}
                                 </tbody>
@@ -202,57 +206,61 @@ export default function AdminDashboard() {
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {loadingUsers ? (
-                                        <tr><td colSpan={4} className="px-4 py-6"><div className="glass-light rounded-xl h-10 animate-shimmer" /></td></tr>
+                                        <tr><td colSpan={5} className="px-4 py-6"><div className="glass-light rounded-xl h-10 animate-shimmer" /></td></tr>
                                     ) : students.length === 0 ? (
-                                        <tr><td colSpan={4} className="px-4 py-6 text-sm text-dark-500">No students found</td></tr>
+                                        <tr><td colSpan={5} className="px-4 py-6 text-sm text-dark-500">No students found</td></tr>
                                     ) : (
                                         students.map((u) => (
-                                            <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                                                <td className="px-4 py-3 text-sm text-white font-medium">
-                                                    {u.name}
-                                                    {resetUserId === u.id && (
-                                                        <div className="mt-2 flex flex-col sm:flex-row gap-2">
-                                                            <input
-                                                                type="password"
-                                                                value={newPassword}
-                                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                                className="input-modern !h-10 !py-2 !pl-3 !text-sm"
-                                                                placeholder="New password (min 6 chars)"
-                                                            />
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={resetSaving || newPassword.trim().length < 6}
-                                                                    onClick={submitReset}
-                                                                    className="btn-primary !py-2 !px-4 text-sm disabled:opacity-60"
-                                                                >
-                                                                    {resetSaving ? 'Saving...' : 'Save'}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={resetSaving}
-                                                                    onClick={cancelReset}
-                                                                    className="btn-ghost !py-2 !px-4 text-sm disabled:opacity-60"
-                                                                >
-                                                                    Cancel
-                                                                </button>
+                                            <>
+                                                <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                                                    <td className="px-4 py-3 text-sm text-white font-medium">{u.name}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-300">{u.email}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-300 capitalize">{u.role}</td>
+                                                    <td className="px-4 py-3 text-sm text-dark-400">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => startReset(u.id)}
+                                                            className="btn-ghost text-sm !py-2"
+                                                        >
+                                                            Reset password
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {resetUserId === u.id && (
+                                                    <tr key={`${u.id}-reset`} className="bg-white/[0.01]">
+                                                        <td colSpan={5} className="px-4 py-4">
+                                                            <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                                                <input
+                                                                    type="password"
+                                                                    value={newPassword}
+                                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                                    className="input-modern !h-10 !py-2 !pl-3 !text-sm"
+                                                                    placeholder="New password (min 6 chars)"
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={resetSaving || newPassword.trim().length < 6}
+                                                                        onClick={submitReset}
+                                                                        className="btn-primary !py-2 !px-4 text-sm disabled:opacity-60"
+                                                                    >
+                                                                        {resetSaving ? 'Saving...' : 'Save'}
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={resetSaving}
+                                                                        onClick={cancelReset}
+                                                                        className="btn-ghost !py-2 !px-4 text-sm disabled:opacity-60"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-dark-300">{u.email}</td>
-                                                <td className="px-4 py-3 text-sm text-dark-300 capitalize">{u.role}</td>
-                                                <td className="px-4 py-3 text-sm text-dark-400">{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'}</td>
-                                                <td className="px-4 py-3 text-right">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => startReset(u.id)}
-                                                        className="btn-ghost text-sm !py-2"
-                                                    >
-                                                        Reset password
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </>
                                         ))
                                     )}
                                 </tbody>

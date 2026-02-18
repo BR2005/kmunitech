@@ -31,6 +31,24 @@
 $ npm install
 ```
 
+## Database (Postgres)
+
+This project supports Postgres via environment variables.
+
+- **Production/Render**: set `DATABASE_URL` (Render Postgres provides this) and optionally `DB_SSL=true`.
+- **Local (Docker)**: run Postgres with `docker-compose.yml` in the repo root, then set the `DB_*` vars below.
+
+### Local env example
+
+```bash
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=password
+DB_NAME=kmunitech
+DB_SSL=false
+```
+
 ## Compile and run the project
 
 ```bash

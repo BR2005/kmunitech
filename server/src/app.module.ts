@@ -17,13 +17,37 @@ import { AdminModule } from './admin/admin.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'sqlite',
-        database: 'db.sqlite',
-        entities: [User, Course, Lesson, Enrollment],
-        synchronize: true, // Auto-create tables (dev only)
-        autoLoadEntities: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get<string>('DATABASE_URL');
+        const dbHost = configService.get<string>('DB_HOST');
+        const dbPort = Number(configService.get<string>('DB_PORT') ?? '5432');
+        const dbUser = configService.get<string>('DB_USER');
+        const dbPassword = configService.get<string>('DB_PASSWORD');
+        const dbName = configService.get<string>('DB_NAME');
+
+        const enableSsl = (configService.get<string>('DB_SSL') ?? '').toLowerCase() === 'true' ||
+          (configService.get<string>('NODE_ENV') ?? '').toLowerCase() === 'production';
+
+        if (!databaseUrl && !(dbHost && dbUser && dbName)) {
+          throw new Error(
+            'Database config missing. Set DATABASE_URL (recommended) or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME for Postgres.',
+          );
+        }
+
+        return {
+          type: 'postgres',
+          url: databaseUrl,
+          host: databaseUrl ? undefined : dbHost,
+          port: databaseUrl ? undefined : dbPort,
+          username: databaseUrl ? undefined : dbUser,
+          password: databaseUrl ? undefined : dbPassword,
+          database: databaseUrl ? undefined : dbName,
+          entities: [User, Course, Lesson, Enrollment],
+          synchronize: true,
+          autoLoadEntities: true,
+          ssl: enableSsl ? { rejectUnauthorized: false } : undefined,
+        } as any;
+      },
       inject: [ConfigService],
     }),
     UsersModule,
