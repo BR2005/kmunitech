@@ -9,6 +9,8 @@ import CoursesPage from './pages/public/CoursesPage';
 import CourseDetailPage from './pages/public/CourseDetailPage';
 import LoginPage from './pages/public/LoginPage';
 import SignupPage from './pages/public/SignupPage';
+import CollaborationsPage from './pages/public/CollaborationsPage';
+import AboutPage from './pages/public/AboutPage';
 
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
@@ -42,6 +44,8 @@ function App() {
           <Route path="/courses/:id" element={<CourseDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/collaborations" element={<CollaborationsPage />} />
+          <Route path="/about" element={<AboutPage />} />
 
           {/* ── Student (protected) ─────────────────────────────── */}
           <Route path="/student/dashboard" element={

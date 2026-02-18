@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Github, Twitter, Linkedin, Mail } from 'lucide-react';
+import { BookOpen, Github, Twitter, Linkedin, Mail, Globe } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -60,6 +60,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 ['About Us', '/about'],
+                ['Collaborations', '/collaborations'],
                 ['Careers', '/careers'],
                 ['Blog', '/blog'],
                 ['Privacy Policy', '/privacy'],
@@ -80,11 +81,14 @@ export default function Footer() {
             <h4 className="text-white font-semibold text-sm mb-4">Contact</h4>
             <div className="space-y-3">
               <a
-                href="mailto:support@kmunitech.com"
+                href="mailto:kmunitech@gmail.com"
                 className="flex items-center gap-2 text-slate-400 hover:text-white text-sm transition-colors"
               >
-                <Mail size={14} /> support@kmunitech.com
+                <Mail size={14} /> kmunitech@gmail.com
               </a>
+              <p className="text-slate-500 text-xs flex items-center gap-2">
+                <Globe size={12} /> Chennai, TamilNadu, IN
+              </p>
               <div className="mt-4 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
                 <p className="text-indigo-300 text-xs font-medium">
                   Admin Access

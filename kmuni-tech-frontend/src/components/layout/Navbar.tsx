@@ -35,9 +35,8 @@ export default function Navbar() {
   const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-[#0d0f1a]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl shadow-black/20' : 'bg-transparent'
-    }`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-[#0d0f1a]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl shadow-black/20' : 'bg-transparent'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -58,6 +57,9 @@ export default function Navbar() {
             </Link>
             <Link to="/about" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
               About
+            </Link>
+            <Link to="/collaborations" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
+              Collaborations
             </Link>
           </div>
 
@@ -128,6 +130,7 @@ export default function Navbar() {
         <div className="md:hidden bg-[#0d0f1a]/98 border-t border-white/5 px-4 py-4 space-y-2 animate-slide-up">
           <Link to="/courses" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Courses</Link>
           <Link to="/about" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">About</Link>
+          <Link to="/collaborations" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Collaborations</Link>
           {isAuthenticated && user ? (
             <>
               <div className="border-t border-white/5 pt-2 mt-2" />
