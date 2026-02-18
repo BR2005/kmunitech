@@ -81,7 +81,7 @@ export default function AboutPage() {
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0d0f1a] via-transparent to-transparent opacity-60" />
                                 <div className="absolute bottom-10 left-10">
-                                    <p className="text-white font-bold text-3xl">Tharun Varshan U</p>
+                                    <p className="text-white font-bold text-3xl">Pradosh K.M</p>
                                     <p className="text-indigo-400 font-medium tracking-widest uppercase text-sm">Founder & CEO</p>
                                 </div>
                             </div>
