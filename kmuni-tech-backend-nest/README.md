@@ -11,6 +11,10 @@ npm install
 
 2. Configure Postgres in environment variables or edit `src/app.module.ts` defaults.
 
+	- The backend is configured for **PostgreSQL** (no SQLite fallback).
+	- Default connection settings are in `.env`.
+	- For local dev you can start Postgres separately (e.g. via your local Postgres install).
+
 3. Run in dev mode:
 
 ```bash
@@ -21,5 +25,5 @@ Notes:
 
 - `synchronize: true` is enabled for quick development; use migrations for production.
 - This is a scaffold — convert controllers, services, and DTOs from the Java project into the `src` folder.
-- Default local DB: SQLite in-memory. To use Postgres set `DB_TYPE=postgres` and provide DB_HOST/DB_USER/DB_PASS/DB_NAME in `.env` or environment.
+- Default local DB: PostgreSQL. Set `DB_HOST/DB_PORT/DB_USER/DB_PASS/DB_NAME` in `.env` or environment.
 - Example: create a `.env` file at project root (a sample `.env` is included).

@@ -12,47 +12,47 @@ import { Enrollment } from './enrollment.entity';
 @Entity('courses')
 export class Course {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description?: string | null;
 
-  @Column({ nullable: true })
-  thumbnail: string;
+  @Column({ type: 'text', nullable: true })
+  thumbnail?: string | null;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  price: number;
+  price!: number;
 
-  @Column({ nullable: true })
-  level: string;
+  @Column({ type: 'text', nullable: true })
+  level?: string | null;
 
-  @Column({ nullable: true })
-  category: string;
+  @Column({ type: 'text', nullable: true })
+  category?: string | null;
 
   @Column('simple-array', { nullable: true })
-  tags: string[];
+  tags?: string[] | null;
 
   @Column({ type: 'int', nullable: true })
-  totalDuration: number;
+  totalDuration?: number | null;
 
   @Column({ type: 'double precision', default: 0 })
-  rating: number;
+  rating!: number;
 
   @Column({ type: 'int', default: 0 })
-  studentsCount: number;
+  studentsCount!: number;
 
   @Column({ default: false })
-  isFeatured: boolean;
+  isFeatured!: boolean;
 
   @ManyToOne(() => User, (u) => u.coursesCreated)
-  instructor: User;
+  instructor!: User;
 
   @OneToMany(() => Lesson, (l) => l.course)
-  lessons: Lesson[];
+  lessons?: Lesson[];
 
   @OneToMany(() => Enrollment, (e) => e.course)
-  enrollments: Enrollment[];
+  enrollments?: Enrollment[];
 }
