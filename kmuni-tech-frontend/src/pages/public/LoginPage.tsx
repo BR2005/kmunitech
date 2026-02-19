@@ -44,11 +44,11 @@ export default function LoginPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
         <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
           <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
+            <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <span className="text-white font-bold text-lg">KM</span>
-            <span className="text-indigo-400 font-bold text-lg"> UniTech</span>
+            <span className="text-white font-bold text-lg">KMUni</span>
+            <span className="text-indigo-400 font-bold text-lg">Tech</span>
           </div>
         </Link>
 

@@ -42,16 +42,19 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-              <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
+              <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <span className="text-white font-bold text-lg">KM</span>
-              <span className="text-indigo-400 font-bold text-lg"> UniTech</span>
+              <span className="text-white font-bold text-lg">KMUni</span>
+              <span className="text-indigo-400 font-bold text-lg">Tech</span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-1">
+            <Link to="/" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
+              Home
+            </Link>
             <Link to="/courses" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
               Courses
             </Link>
@@ -128,6 +131,7 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden bg-[#0d0f1a]/98 border-t border-white/5 px-4 py-4 space-y-2 animate-slide-up">
+          <Link to="/" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Home</Link>
           <Link to="/courses" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Courses</Link>
           <Link to="/about" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">About</Link>
           <Link to="/collaborations" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Collaborations</Link>

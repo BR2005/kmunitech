@@ -14,7 +14,7 @@ export default function Footer() {
                 <BookOpen size={18} className="text-white" />
               </div>
               <span className="text-white font-bold text-lg">
-                KMUni<span className="text-indigo-400"> Tech</span>
+                KMUni<span className="text-indigo-400">Tech</span>
               </span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -22,10 +22,16 @@ export default function Footer() {
               Built by ISquare Tech Solutions.
             </p>
             <div className="flex items-center gap-3 mt-5">
-              {[Github, Twitter, Linkedin].map((Icon, i) => (
+              {[
+                { Icon: Github, href: '#' },
+                { Icon: Twitter, href: '#' },
+                { Icon: Linkedin, href: 'https://www.linkedin.com/company/km-unitech/' }
+              ].map(({ Icon, href }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={href}
+                  target={href !== '#' ? '_blank' : undefined}
+                  rel={href !== '#' ? 'noopener noreferrer' : undefined}
                   className="w-9 h-9 bg-white/5 hover:bg-indigo-500/20 border border-white/8 hover:border-indigo-500/30 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-400 transition-all"
                 >
                   <Icon size={16} />
@@ -104,7 +110,7 @@ export default function Footer() {
 
         <div className="border-t border-white/5 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-slate-500 text-sm">
-            © 2024 KMUni Tech. All rights reserved.
+            © 2024 KMUniTech. All rights reserved.
           </p>
           <p className="text-slate-500 text-sm">
             Built with ❤️ by{' '}

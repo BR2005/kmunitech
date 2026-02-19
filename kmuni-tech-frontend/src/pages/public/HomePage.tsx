@@ -8,6 +8,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { formatINRCompact, formatPriceINR } from '../../utils/currency';
 import { fetchFeaturedCourses } from '../../utils/api';
 import { Course } from '../../types';
+import { collaborations } from '../../data/collaborations';
 
 const stats = [
   { value: '50K+', label: 'Students Enrolled', icon: Users },
@@ -58,7 +59,7 @@ export default function HomePage() {
       <section className="hero-gradient relative min-h-screen flex items-center pt-16 overflow-hidden">
         {/* Floating orbs */}
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl animate-pulse-slow pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/8 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style={{animationDelay:'2s'}} />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/8 rounded-full blur-3xl animate-pulse-slow pointer-events-none" style={{ animationDelay: '2s' }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
           <div className="max-w-3xl">
@@ -71,10 +72,10 @@ export default function HomePage() {
             {/* Brand mark */}
             <div className="flex items-center gap-3 mb-6 animate-slide-up stagger-1">
               <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img src={logoSrc} alt="KM UniTech" className="w-full h-full object-contain" />
+                <img src={logoSrc} alt="KMUniTech" className="w-full h-full object-contain" />
               </div>
               <div className="text-slate-300 text-sm leading-snug">
-                <p className="text-white font-semibold text-base">KM UniTech</p>
+                <p className="text-white font-semibold text-base">KMUniTech</p>
                 <p>Universal Tech Solutions — learn, build, scale.</p>
               </div>
             </div>
@@ -86,7 +87,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-slate-400 text-xl leading-relaxed mb-10 max-w-2xl animate-slide-up stagger-3">
-              Access world-class education from expert instructors. Whether you're starting out or leveling up — KMUni Tech has the course for you.
+              Access world-class education from expert instructors. Whether you're starting out or leveling up — KMUniTech has the course for you.
             </p>
 
             {/* CTA Buttons */}
@@ -103,14 +104,14 @@ export default function HomePage() {
             {/* Social Proof */}
             <div className="flex items-center gap-4 animate-slide-up stagger-5">
               <div className="flex -space-x-2">
-                {['A','B','C','D','E'].map((l, i) => (
+                {['A', 'B', 'C', 'D', 'E'].map((l, i) => (
                   <div key={i} className="w-9 h-9 rounded-full border-2 border-[#0d0f1a] flex items-center justify-center text-xs font-bold text-white"
                     style={{ background: `hsl(${i * 60 + 220}, 70%, 55%)` }}>{l}</div>
                 ))}
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(i => <Star key={i} size={13} className="fill-amber-400 text-amber-400" />)}
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={13} className="fill-amber-400 text-amber-400" />)}
                   <span className="text-white font-bold ml-1 text-sm">4.9</span>
                 </div>
                 <p className="text-slate-400 text-xs">Trusted by 50,000+ students</p>
@@ -169,11 +170,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ─── Collaborations (Simple Section) ─────────────────────────── */}
+      <section className="py-20 bg-[#0d0f1a] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-indigo-400 text-sm font-semibold tracking-wider uppercase mb-2">Our Network</p>
+              <h2 className="section-title">Strategic Collaborations</h2>
+              <p className="text-slate-400 mt-2 max-w-lg">We partner with industry leaders to bring the best opportunities to our students.</p>
+            </div>
+            <Link to="/collaborations" className="hidden md:flex items-center gap-1.5 text-indigo-400 hover:text-indigo-300 font-medium text-sm transition-colors">
+              View all partners <ChevronRight size={16} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {collaborations.slice(0, 2).map((collab, index) => (
+              <div key={index} className="flex flex-col sm:flex-row bg-[#12141f] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all">
+                <div className="w-full sm:w-32 h-32 flex-shrink-0 bg-black/20">
+                  <img src={collab.image} alt={collab.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5 flex flex-col justify-center">
+                  <h3 className="text-white font-bold text-lg mb-1">{collab.title}</h3>
+                  <p className="text-indigo-300/60 text-xs font-medium uppercase mb-2">{collab.tagline}</p>
+                  <p className="text-slate-400 text-sm line-clamp-1">{collab.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10 md:hidden">
+            <Link to="/collaborations" className="btn-secondary text-sm">View More Partners</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ─── Features ─────────────────────────────────────────────────── */}
       <section className="py-20 bg-[#0f1120]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="text-indigo-400 text-sm font-semibold tracking-wider uppercase mb-2">Why KMUni Tech?</p>
+            <p className="text-indigo-400 text-sm font-semibold tracking-wider uppercase mb-2">Why KMUniTech?</p>
             <h2 className="section-title">Everything You Need to Succeed</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -197,7 +233,7 @@ export default function HomePage() {
             <p className="text-orange-400 text-sm font-semibold tracking-wider uppercase mb-3">For Instructors</p>
             <h2 className="section-title mb-4">Share Your Knowledge,<br />Earn Revenue</h2>
             <p className="text-slate-400 leading-relaxed mb-8">
-              Join our growing community of expert instructors. Create courses, reach thousands of students, and build your brand on KMUni Tech.
+              Join our growing community of expert instructors. Create courses, reach thousands of students, and build your brand on KMUniTech.
             </p>
             {['Create and publish courses easily', 'Reach 50,000+ eager students', 'Earn revenue from paid courses', 'Track student progress & analytics'].map(item => (
               <div key={item} className="flex items-center gap-2.5 mb-3">

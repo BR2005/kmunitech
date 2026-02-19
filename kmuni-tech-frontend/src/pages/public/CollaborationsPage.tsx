@@ -2,44 +2,12 @@ import React from 'react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { Handshake, Zap, Globe, Shield, ArrowRight, Heart, BookOpen, Star, ExternalLink } from 'lucide-react';
+import { collaborations } from '../../data/collaborations';
 
 const baseUrl = import.meta.env.BASE_URL;
 const linkedInUrl = "https://www.linkedin.com/company/km-unitech/";
 
-const collaborations = [
-    {
-        title: "Alpha World",
-        tagline: "Strategic Innovation Partnership",
-        description: "Focused on delivering future-ready digital solutions and accelerating tech ecosystem growth.",
-        image: `${baseUrl}assetskmuni/img1.jpg`,
-        icon: Zap,
-        color: "from-blue-500 to-cyan-500"
-    },
-    {
-        title: "Hyper Hub",
-        tagline: "Technology Integration Alliance",
-        description: "United to scale impact through technology-driven initiatives and robust digital infrastructures.",
-        image: `${baseUrl}assetskmuni/img2.jpg`,
-        icon: Globe,
-        color: "from-purple-500 to-indigo-500"
-    },
-    {
-        title: "Wyntrix",
-        tagline: "Industrial Talent Collaboration",
-        description: "Bridging skill gaps through design-led innovation and industrial upskilling programs.",
-        image: `${baseUrl}assetskmuni/img3.jpg`,
-        icon: Handshake,
-        color: "from-orange-500 to-yellow-500"
-    },
-    {
-        title: "White Devils",
-        tagline: "Creative Excellence Alliance",
-        description: "Driving impactful experiences through a shared commitment to excellence and creative impact.",
-        image: `${baseUrl}assetskmuni/img4.jpg`,
-        icon: Shield,
-        color: "from-red-500 to-rose-500"
-    }
-];
+""; // Placeholder for removal of local collaborations array
 
 const socialInitiatives = [
     {
@@ -100,11 +68,11 @@ export default function CollaborationsPage() {
                                 className="group flex flex-col sm:flex-row bg-[#12141f] border border-white/5 rounded-2xl overflow-hidden hover:border-indigo-500/30 transition-all duration-300"
                             >
                                 {/* Slightly larger, balanced image size */}
-                                <div className="sm:w-40 h-40 bg-black/40 relative flex-shrink-0">
+                                <div className="w-full aspect-video sm:aspect-square sm:w-40 bg-black/40 relative flex-shrink-0">
                                     <img
                                         src={collab.image}
                                         alt={collab.title}
-                                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-full object-contain sm:object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                     <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-gradient-to-br ${collab.color} flex items-center justify-center shadow-lg border border-white/10 z-10`}>
                                         <collab.icon size={12} className="text-white" />
@@ -176,7 +144,7 @@ export default function CollaborationsPage() {
                         <div className="absolute top-0 left-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl opacity-20" />
                         <h3 className="text-xl font-bold text-white mb-6 uppercase tracking-widest text-indigo-400">Our Vision</h3>
                         <p className="text-white text-xl md:text-2xl font-light leading-relaxed mb-8 italic">
-                            "To build a unified platform for learning, innovation, and impact across diverse technology domains. All Domains, One Destination – KM UniTech."
+                            "To build a unified platform for learning, innovation, and impact across diverse technology domains. All Domains, One Destination – KMUniTech."
                         </p>
                         <div className="flex flex-wrap justify-center gap-4">
                             <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-slate-400 text-xs font-semibold">MSME Approved</div>

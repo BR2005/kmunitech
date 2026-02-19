@@ -79,11 +79,11 @@ export default function SignupPage() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
         <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
           <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
+            <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <span className="text-white font-bold text-lg">KM</span>
-            <span className="text-indigo-400 font-bold text-lg"> UniTech</span>
+            <span className="text-white font-bold text-lg">KMUni</span>
+            <span className="text-indigo-400 font-bold text-lg">Tech</span>
           </div>
         </Link>
 
@@ -323,7 +323,7 @@ export default function SignupPage() {
 
           <h1 className="text-3xl font-bold text-white mb-2">Create account</h1>
           <p className="text-slate-400 mb-8">
-            Join KMUni Tech as a student or instructor
+            Join KMUniTech as a student or instructor
           </p>
 
           {/* Role Toggle */}
@@ -346,8 +346,8 @@ export default function SignupPage() {
                 key={opt.value}
                 onClick={() => setRole(opt.value as any)}
                 className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${role === opt.value
-                    ? 'border-indigo-500/50 bg-indigo-500/10 text-white'
-                    : 'border-white/10 bg-white/3 text-slate-400 hover:border-white/20'
+                  ? 'border-indigo-500/50 bg-indigo-500/10 text-white'
+                  : 'border-white/10 bg-white/3 text-slate-400 hover:border-white/20'
                   }`}
               >
                 <div

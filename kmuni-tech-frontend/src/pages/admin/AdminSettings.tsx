@@ -11,7 +11,7 @@ export default function AdminSettings() {
         <div className="card p-6">
           <div className="flex items-center gap-2.5 mb-5"><Settings size={18} className="text-orange-400" /><h2 className="text-white font-semibold">Platform Settings</h2></div>
           <div className="space-y-4">
-            <div><label className="block text-slate-300 text-sm font-medium mb-2">Platform Name</label><input defaultValue="KMUni Tech" className="input-field" /></div>
+            <div><label className="block text-slate-300 text-sm font-medium mb-2">Platform Name</label><input defaultValue="KMUniTech" className="input-field" /></div>
             <div><label className="block text-slate-300 text-sm font-medium mb-2">Support Email</label><input defaultValue="support@kmunitech.com" type="email" className="input-field" /></div>
             <div><label className="block text-slate-300 text-sm font-medium mb-2">Admin Contact (ISquare)</label><input defaultValue="admin@isquare.com" type="email" className="input-field" /></div>
           </div>
@@ -22,7 +22,7 @@ export default function AdminSettings() {
         <div className="card p-6">
           <div className="flex items-center gap-2.5 mb-5"><Shield size={18} className="text-orange-400" /><h2 className="text-white font-semibold">Security Settings</h2></div>
           <div className="space-y-4">
-            {['Require email verification for new accounts','Allow instructor self-registration','Enable two-factor authentication','Auto-suspend accounts on suspicious activity'].map(item => (
+            {['Require email verification for new accounts', 'Allow instructor self-registration', 'Enable two-factor authentication', 'Auto-suspend accounts on suspicious activity'].map(item => (
               <div key={item} className="flex items-center justify-between py-2">
                 <span className="text-slate-300 text-sm">{item}</span>
                 <button className="w-10 h-5 bg-indigo-600 rounded-full relative">
