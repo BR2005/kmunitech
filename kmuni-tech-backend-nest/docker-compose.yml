@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: kmunitech-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kmunitech
+    ports:
+      - "5432:5432"
+    volumes:
+      - kmunitech_pgdata:/var/lib/postgresql/data
+
+volumes:
+  kmunitech_pgdata:

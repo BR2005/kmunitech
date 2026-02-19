@@ -4,29 +4,29 @@ import { Course } from './course.entity';
 @Entity('lessons')
 export class Lesson {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+  description?: string | null;
 
   @Column({ type: 'int' })
-  duration: number;
+  duration!: number;
 
   @Column({ name: 'lesson_order', type: 'int' })
-  order: number;
+  order!: number;
 
   @Column({ default: false })
-  isPreview: boolean;
-
-  @Column({ nullable: true })
-  videoUrl: string;
+  isPreview!: boolean;
 
   @Column({ type: 'text', nullable: true })
-  content: string;
+  videoUrl?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  content?: string | null;
 
   @ManyToOne(() => Course, (c) => c.lessons)
-  course: Course;
+  course!: Course;
 }

@@ -5,22 +5,23 @@ import { User } from './entities/user.entity';
 import { Course } from './entities/course.entity';
 import { Lesson } from './entities/lesson.entity';
 import { Enrollment } from './entities/enrollment.entity';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { CoursesController } from './courses/courses.controller';
+import { CoursesService } from './courses/courses.service';
+import { StudentController } from './student/student.controller';
+import { StudentService } from './student/student.service';
+import { InstructorController } from './instructor/instructor.controller';
+import { InstructorService } from './instructor/instructor.service';
+import { AdminController } from './admin/admin.controller';
+import { MediaController } from './media/media.controller';
+import { RolesGuard } from './common/auth/roles.guard';
 
 @Module({
   imports: [
-    // Datastore selection: prefer explicit DB_TYPE or fall back to SQLite for local
+    // Datastore: PostgreSQL
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
-        const useSqlite =
-          process.env.DB_TYPE === 'sqlite' || !process.env.DB_HOST;
-        if (useSqlite) {
-          return {
-            type: 'sqlite' as const,
-            database: process.env.DB_SQLITE_FILE || ':memory:',
-            entities: [User, Course, Lesson, Enrollment],
-            synchronize: true,
-          };
-        }
         return {
           type: 'postgres' as const,
           host: process.env.DB_HOST || 'localhost',
@@ -35,6 +36,21 @@ import { Enrollment } from './entities/enrollment.entity';
     }),
     TypeOrmModule.forFeature([User, Course, Lesson, Enrollment]),
     AuthModule,
+  ],
+  controllers: [
+    AuthController,
+    CoursesController,
+    StudentController,
+    InstructorController,
+    AdminController,
+    MediaController,
+  ],
+  providers: [
+    AuthService,
+    CoursesService,
+    StudentService,
+    InstructorService,
+    RolesGuard,
   ],
 })
 export class AppModule {}

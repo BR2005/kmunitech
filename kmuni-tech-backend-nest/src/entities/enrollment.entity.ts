@@ -5,14 +5,14 @@ import { Course } from './course.entity';
 @Entity('enrollments')
 export class Enrollment {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @ManyToOne(() => User, (u) => u.enrollments)
-  student: User;
+  student!: User;
 
   @ManyToOne(() => Course, (c) => c.enrollments)
-  course: Course;
+  course!: Course;
 
   @Column({ type: 'int', default: 0 })
-  progress: number;
+  progress!: number;
 }

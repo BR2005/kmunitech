@@ -27,31 +27,31 @@ __decorate([
 ], Course.prototype, "title", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], Course.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
 ], Course.prototype, "thumbnail", void 0);
 __decorate([
     (0, typeorm_1.Column)('decimal', { precision: 10, scale: 2 }),
     __metadata("design:type", Number)
 ], Course.prototype, "price", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
 ], Course.prototype, "level", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
 ], Course.prototype, "category", void 0);
 __decorate([
     (0, typeorm_1.Column)('simple-array', { nullable: true }),
-    __metadata("design:type", Array)
+    __metadata("design:type", Object)
 ], Course.prototype, "tags", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int', nullable: true }),
-    __metadata("design:type", Number)
+    __metadata("design:type", Object)
 ], Course.prototype, "totalDuration", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'double precision', default: 0 }),

@@ -25,7 +25,7 @@ __decorate([
 ], Lesson.prototype, "title", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], Lesson.prototype, "description", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'int' }),
@@ -40,12 +40,12 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Lesson.prototype, "isPreview", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", Object)
 ], Lesson.prototype, "videoUrl", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'text', nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], Lesson.prototype, "content", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => course_entity_1.Course, (c) => c.lessons),

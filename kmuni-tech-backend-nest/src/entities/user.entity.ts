@@ -11,24 +11,24 @@ export enum UserRole {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column()
-  password: string;
+  password!: string;
 
   // Store role as text to remain compatible with SQLite (enum type not supported)
   @Column({ type: 'text', default: UserRole.STUDENT })
-  role: UserRole;
+  role!: UserRole;
 
   @OneToMany(() => Enrollment, (e) => e.student)
-  enrollments: Enrollment[];
+  enrollments?: Enrollment[];
 
   @OneToMany(() => Course, (c) => c.instructor)
-  coursesCreated: Course[];
+  coursesCreated?: Course[];
 }

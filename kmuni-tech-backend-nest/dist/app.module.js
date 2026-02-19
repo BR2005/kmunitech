@@ -14,24 +14,26 @@ const user_entity_1 = require("./entities/user.entity");
 const course_entity_1 = require("./entities/course.entity");
 const lesson_entity_1 = require("./entities/lesson.entity");
 const enrollment_entity_1 = require("./entities/enrollment.entity");
+const auth_controller_1 = require("./auth/auth.controller");
+const auth_service_1 = require("./auth/auth.service");
+const courses_controller_1 = require("./courses/courses.controller");
+const courses_service_1 = require("./courses/courses.service");
+const student_controller_1 = require("./student/student.controller");
+const student_service_1 = require("./student/student.service");
+const instructor_controller_1 = require("./instructor/instructor.controller");
+const instructor_service_1 = require("./instructor/instructor.service");
+const admin_controller_1 = require("./admin/admin.controller");
+const media_controller_1 = require("./media/media.controller");
+const roles_guard_1 = require("./common/auth/roles.guard");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            // Datastore selection: prefer explicit DB_TYPE or fall back to SQLite for local
+            // Datastore: PostgreSQL
             typeorm_1.TypeOrmModule.forRootAsync({
                 useFactory: async () => {
-                    const useSqlite = process.env.DB_TYPE === 'sqlite' || !process.env.DB_HOST;
-                    if (useSqlite) {
-                        return {
-                            type: 'sqlite',
-                            database: process.env.DB_SQLITE_FILE || ':memory:',
-                            entities: [user_entity_1.User, course_entity_1.Course, lesson_entity_1.Lesson, enrollment_entity_1.Enrollment],
-                            synchronize: true,
-                        };
-                    }
                     return {
                         type: 'postgres',
                         host: process.env.DB_HOST || 'localhost',
@@ -46,6 +48,21 @@ exports.AppModule = AppModule = __decorate([
             }),
             typeorm_1.TypeOrmModule.forFeature([user_entity_1.User, course_entity_1.Course, lesson_entity_1.Lesson, enrollment_entity_1.Enrollment]),
             auth_module_1.AuthModule,
+        ],
+        controllers: [
+            auth_controller_1.AuthController,
+            courses_controller_1.CoursesController,
+            student_controller_1.StudentController,
+            instructor_controller_1.InstructorController,
+            admin_controller_1.AdminController,
+            media_controller_1.MediaController,
+        ],
+        providers: [
+            auth_service_1.AuthService,
+            courses_service_1.CoursesService,
+            student_service_1.StudentService,
+            instructor_service_1.InstructorService,
+            roles_guard_1.RolesGuard,
         ],
     })
 ], AppModule);
