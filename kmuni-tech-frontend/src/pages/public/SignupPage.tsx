@@ -17,6 +17,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const defaultRole = (location.state as any)?.role || 'student';
+  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
 
   const [role, setRole] = useState<'student' | 'instructor'>(defaultRole);
   const [name, setName] = useState('');
@@ -76,13 +77,14 @@ export default function SignupPage() {
       {/* Left Panel */}
       <div className="hidden lg:flex flex-col w-1/2 bg-gradient-to-br from-purple-900/30 via-[#0d0f1a] to-indigo-900/20 border-r border-white/5 p-12 relative overflow-hidden">
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-        <Link to="/" className="flex items-center gap-2.5 mb-12">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <BookOpen size={20} className="text-white" />
+        <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
+          <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
+            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-bold text-xl">
-            KMUni<span className="text-indigo-400"> Tech</span>
-          </span>
+          <div>
+            <span className="text-white font-bold text-lg">KM</span>
+            <span className="text-indigo-400 font-bold text-lg"> UniTech</span>
+          </div>
         </Link>
 
         {/* Illustration */}
@@ -289,17 +291,17 @@ export default function SignupPage() {
           <div className="space-y-4">
             {(role === 'student'
               ? [
-                  '✅ Access 200+ free and paid courses',
-                  '📈 Track your learning progress',
-                  '🏆 Earn verified certificates',
-                  '🤝 Join a community of 50K+ learners',
-                ]
+                '✅ Access 200+ free and paid courses',
+                '📈 Track your learning progress',
+                '🏆 Earn verified certificates',
+                '🤝 Join a community of 50K+ learners',
+              ]
               : [
-                  '🎥 Create and publish courses easily',
-                  '💰 Earn from paid courses',
-                  '📊 Detailed analytics dashboard',
-                  '👥 Reach thousands of students',
-                ]
+                '🎥 Create and publish courses easily',
+                '💰 Earn from paid courses',
+                '📊 Detailed analytics dashboard',
+                '👥 Reach thousands of students',
+              ]
             ).map((item) => (
               <div key={item} className="text-slate-300 text-sm">
                 {item}
@@ -343,11 +345,10 @@ export default function SignupPage() {
               <button
                 key={opt.value}
                 onClick={() => setRole(opt.value as any)}
-                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${
-                  role === opt.value
+                className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all ${role === opt.value
                     ? 'border-indigo-500/50 bg-indigo-500/10 text-white'
                     : 'border-white/10 bg-white/3 text-slate-400 hover:border-white/20'
-                }`}
+                  }`}
               >
                 <div
                   className={`w-10 h-10 bg-gradient-to-br ${opt.color} rounded-xl flex items-center justify-center`}

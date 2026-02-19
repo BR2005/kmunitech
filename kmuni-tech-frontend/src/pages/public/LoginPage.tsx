@@ -8,6 +8,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from || '/';
+  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -41,13 +42,14 @@ export default function LoginPage() {
       {/* Left Panel */}
       <div className="hidden lg:flex flex-col w-1/2 bg-gradient-to-br from-indigo-900/40 via-[#0d0f1a] to-purple-900/20 border-r border-white/5 p-12 relative overflow-hidden">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-        <Link to="/" className="flex items-center gap-2.5 mb-12">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-            <BookOpen size={20} className="text-white" />
+        <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
+          <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
+            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-white font-bold text-xl">
-            KMUni<span className="text-indigo-400"> Tech</span>
-          </span>
+          <div>
+            <span className="text-white font-bold text-lg">KM</span>
+            <span className="text-indigo-400 font-bold text-lg"> UniTech</span>
+          </div>
         </Link>
 
         {/* Illustration */}
