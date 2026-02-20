@@ -25,13 +25,13 @@ import { AdminSeeder } from './seed/admin.seeder';
       useFactory: async () => {
         const databaseUrl = (process.env.DATABASE_URL || '').trim();
         const useSsl = (process.env.DB_SSL || '').toLowerCase() === 'true';
+        const sslConfig = useSsl ? { ssl: { rejectUnauthorized: false } } : {};
 
         return {
           type: 'postgres' as const,
           ...(databaseUrl
             ? {
                 url: databaseUrl,
-                ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
               }
             : {
                 host: process.env.DB_HOST || 'localhost',
@@ -40,6 +40,7 @@ import { AdminSeeder } from './seed/admin.seeder';
                 password: process.env.DB_PASS || 'postgres',
                 database: process.env.DB_NAME || 'kmunitech',
               }),
+          ...sslConfig,
           entities: [User, Course, Lesson, Enrollment],
           synchronize: true,
         };
