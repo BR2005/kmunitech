@@ -17,6 +17,7 @@ import { AdminController } from './admin/admin.controller';
 import { MediaController } from './media/media.controller';
 import { RolesGuard } from './common/auth/roles.guard';
 import { AdminSeeder } from './seed/admin.seeder';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { AdminSeeder } from './seed/admin.seeder';
     AuthModule,
   ],
   controllers: [
+    HealthController,
     AuthController,
     CoursesController,
     StudentController,
