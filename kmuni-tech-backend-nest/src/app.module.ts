@@ -23,13 +23,23 @@ import { AdminSeeder } from './seed/admin.seeder';
     // Datastore: PostgreSQL
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
+        const databaseUrl = (process.env.DATABASE_URL || '').trim();
+        const useSsl = (process.env.DB_SSL || '').toLowerCase() === 'true';
+
         return {
           type: 'postgres' as const,
-          host: process.env.DB_HOST || 'localhost',
-          port: +(process.env.DB_PORT || 5432),
-          username: process.env.DB_USER || 'postgres',
-          password: process.env.DB_PASS || 'postgres',
-          database: process.env.DB_NAME || 'kmunitech',
+          ...(databaseUrl
+            ? {
+                url: databaseUrl,
+                ...(useSsl ? { ssl: { rejectUnauthorized: false } } : {}),
+              }
+            : {
+                host: process.env.DB_HOST || 'localhost',
+                port: +(process.env.DB_PORT || 5432),
+                username: process.env.DB_USER || 'postgres',
+                password: process.env.DB_PASS || 'postgres',
+                database: process.env.DB_NAME || 'kmunitech',
+              }),
           entities: [User, Course, Lesson, Enrollment],
           synchronize: true,
         };
