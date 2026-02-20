@@ -43,6 +43,11 @@ import { AdminSeeder } from './seed/admin.seeder';
           ...sslConfig,
           entities: [User, Course, Lesson, Enrollment],
           synchronize: true,
+          retryAttempts: 10,
+          retryDelay: 3000,
+          extra: {
+            connectionTimeoutMillis: 10000,
+          },
         };
       },
     }),

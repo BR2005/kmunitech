@@ -7,7 +7,10 @@ import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 async function bootstrap() {
+  // Helpful on platforms like Render where a DB connection hang can prevent port binding.
+  console.log('Bootstrapping Nest application...');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  console.log('Nest application created. Configuring middleware...');
   app.setGlobalPrefix('api');
 
   const isProd = process.env.NODE_ENV === 'production';
@@ -31,6 +34,7 @@ async function bootstrap() {
   }
   app.useStaticAssets(uploadsRoot, { prefix: '/uploads' });
 
+  console.log('Starting HTTP listener...');
   const port = Number(process.env.PORT) || 3000;
   await app.listen(port, '0.0.0.0');
   console.log('Nest app listening on', port);
