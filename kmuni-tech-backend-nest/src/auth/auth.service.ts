@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { randomBytes, scryptSync, timingSafeEqual } from 'crypto';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { SignupDto } from './dto/signup.dto';
+import { hashPassword, verifyPassword } from './password.util';
 
 type ApiUser = {
   id: string;
@@ -47,23 +47,6 @@ function sanitizeUser(user: User): ApiUser {
     email: user.email,
     role: toAppRole(user.role),
   };
-}
-
-function hashPassword(password: string): string {
-  const salt = randomBytes(16);
-  const hash = scryptSync(password, salt, 64);
-  return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
-}
-
-function verifyPassword(password: string, stored: string): boolean {
-  const parts = stored.split('$');
-  if (parts.length !== 3) return false;
-  const [algo, saltHex, hashHex] = parts;
-  if (algo !== 'scrypt') return false;
-  const salt = Buffer.from(saltHex, 'hex');
-  const expected = Buffer.from(hashHex, 'hex');
-  const actual = scryptSync(password, salt, expected.length);
-  return timingSafeEqual(actual, expected);
 }
 
 @Injectable()

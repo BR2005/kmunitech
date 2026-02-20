@@ -25,6 +25,7 @@ const instructor_service_1 = require("./instructor/instructor.service");
 const admin_controller_1 = require("./admin/admin.controller");
 const media_controller_1 = require("./media/media.controller");
 const roles_guard_1 = require("./common/auth/roles.guard");
+const admin_seeder_1 = require("./seed/admin.seeder");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -63,6 +64,7 @@ exports.AppModule = AppModule = __decorate([
             student_service_1.StudentService,
             instructor_service_1.InstructorService,
             roles_guard_1.RolesGuard,
+            admin_seeder_1.AdminSeeder,
         ],
     })
 ], AppModule);

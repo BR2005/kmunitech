@@ -16,6 +16,7 @@ import { InstructorService } from './instructor/instructor.service';
 import { AdminController } from './admin/admin.controller';
 import { MediaController } from './media/media.controller';
 import { RolesGuard } from './common/auth/roles.guard';
+import { AdminSeeder } from './seed/admin.seeder';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { RolesGuard } from './common/auth/roles.guard';
     StudentService,
     InstructorService,
     RolesGuard,
+    AdminSeeder,
   ],
 })
 export class AppModule {}

@@ -16,9 +16,9 @@ exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const jwt_1 = require("@nestjs/jwt");
-const crypto_1 = require("crypto");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../entities/user.entity");
+const password_util_1 = require("./password.util");
 function toAppRole(role) {
     if (role === user_entity_1.UserRole.ADMIN)
         return 'admin';
@@ -41,23 +41,6 @@ function sanitizeUser(user) {
         role: toAppRole(user.role),
     };
 }
-function hashPassword(password) {
-    const salt = (0, crypto_1.randomBytes)(16);
-    const hash = (0, crypto_1.scryptSync)(password, salt, 64);
-    return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
-}
-function verifyPassword(password, stored) {
-    const parts = stored.split('$');
-    if (parts.length !== 3)
-        return false;
-    const [algo, saltHex, hashHex] = parts;
-    if (algo !== 'scrypt')
-        return false;
-    const salt = Buffer.from(saltHex, 'hex');
-    const expected = Buffer.from(hashHex, 'hex');
-    const actual = (0, crypto_1.scryptSync)(password, salt, expected.length);
-    return (0, crypto_1.timingSafeEqual)(actual, expected);
-}
 let AuthService = class AuthService {
     constructor(usersRepo, jwt) {
         this.usersRepo = usersRepo;
@@ -73,7 +56,7 @@ let AuthService = class AuthService {
         const user = this.usersRepo.create({
             name: dto.name,
             email: dto.email,
-            password: hashPassword(dto.password),
+            password: (0, password_util_1.hashPassword)(dto.password),
             role: toEntityRole(dto.role),
         });
         const saved = await this.usersRepo.save(user);
@@ -82,7 +65,7 @@ let AuthService = class AuthService {
     }
     async login(dto) {
         const user = await this.usersRepo.findOne({ where: { email: dto.email } });
-        if (!user || !verifyPassword(dto.password, user.password)) {
+        if (!user || !(0, password_util_1.verifyPassword)(dto.password, user.password)) {
             throw new common_1.UnauthorizedException('Invalid email or password');
         }
         const token = await this.signToken(user);
@@ -98,7 +81,7 @@ let AuthService = class AuthService {
         const user = await this.usersRepo.findOne({ where: { id: userId } });
         if (!user)
             throw new common_1.BadRequestException('User not found');
-        user.password = hashPassword(newPassword);
+        user.password = (0, password_util_1.hashPassword)(newPassword);
         await this.usersRepo.save(user);
     }
     async signToken(user) {

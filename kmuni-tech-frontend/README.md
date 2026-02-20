@@ -81,50 +81,45 @@ src/
 
 ## 🔌 Connecting to Spring Boot API
 
-All API calls are currently mocked. Search for `TODO:` comments in `src/context/AuthContext.tsx` to replace with real endpoints.
+This frontend is wired to the **NestJS backend** in `../kmuni-tech-backend-nest`.
 
-### Recommended API Endpoints (Spring Boot):
+### Backend Base URL
+
+Create `kmuni-tech-frontend/.env.local`:
 
 ```
-POST /api/auth/login           → Login
-POST /api/auth/signup          → Register
-GET  /api/courses              → List courses
-GET  /api/courses/:id          → Course detail
-POST /api/courses/:id/enroll   → Enroll
-GET  /api/student/courses      → My enrolled courses
-GET  /api/instructor/courses   → Instructor's courses
-POST /api/instructor/courses   → Create course
-GET  /api/admin/users          → All users
-POST /api/admin/users/:id/reset-password → Admin reset
+VITE_API_BASE_URL=http://localhost:3000
 ```
 
-### API Client Setup (recommended):
+The frontend calls endpoints like:
 
-```ts
-// src/utils/apiClient.ts
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-
-export const apiClient = {
-  get: (path: string) => fetch(`${BASE_URL}${path}`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('kmuni_token')}` }
-  }).then(r => r.json()),
-  
-  post: (path: string, body: any) => fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('kmuni_token')}`
-    },
-    body: JSON.stringify(body)
-  }).then(r => r.json())
-};
+```
+POST /api/auth/login
+POST /api/auth/signup
+GET  /api/courses
+GET  /api/courses/:id
+POST /api/courses/:id/enroll
+GET  /api/student/courses
+GET  /api/instructor/courses
+POST /api/instructor/courses
+GET  /api/media/lessons/:lessonId/playback
 ```
 
-### Environment Variables:
-Create `.env.local`:
+### Supabase (Lesson Video Storage)
+
+When an instructor creates a course, lesson video files are uploaded to **Supabase Storage** from the browser and the resulting public URL is sent to the backend.
+
+Add these to `kmuni-tech-frontend/.env.local`:
+
 ```
-VITE_API_URL=http://localhost:8080
+VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<your_anon_publishable_key>
+VITE_SUPABASE_VIDEO_BUCKET=edtechkmunitek
 ```
+
+Notes:
+- The Storage bucket must already exist.
+- `uploadLessonVideoToSupabase()` uses `getPublicUrl()`, so the bucket/object needs to be publicly readable (or you will need to switch to signed URLs).
 
 ---
 
