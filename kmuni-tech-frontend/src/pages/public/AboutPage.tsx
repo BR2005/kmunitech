@@ -76,7 +76,7 @@ export default function AboutPage() {
                             {/* Image Column */}
                             <div className="relative aspect-square lg:aspect-auto lg:h-[600px] overflow-hidden">
                                 <img
-                                    src={`${baseUrl}assetskmuni/image.png`}
+                                    src={`${baseUrl}assetskmuni/pradosh-km.png`}
                                     alt="Tharun Varshan U"
                                     className="w-full h-full object-cover object-top filter brightness-90 hover:brightness-100 transition-all duration-700"
                                 />

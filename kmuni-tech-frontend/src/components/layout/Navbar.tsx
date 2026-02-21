@@ -32,7 +32,7 @@ export default function Navbar() {
     return user ? colors[user.role] : '';
   };
 
-  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
+  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.jpeg`;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${(isScrolled || mobileOpen) ? 'bg-[#0d0f1a]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl shadow-black/20' : 'bg-transparent'
