@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import StatCard from '../../components/common/StatCard';
-import { Users, BookOpen, DollarSign, GraduationCap, TrendingUp, ShieldCheck, ArrowRight, AlertTriangle } from 'lucide-react';
-import { formatINRCompact } from '../../utils/currency';
+import { Users, BookOpen, GraduationCap, TrendingUp, ShieldCheck, ArrowRight } from 'lucide-react';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { User } from '../../types';
 import { useAuth } from '../../context/AuthContext';
@@ -27,7 +26,6 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const platformRevenue = 0;
 
   useEffect(() => {
     let mounted = true;
@@ -60,8 +58,9 @@ export default function AdminDashboard() {
   const recentUsers = useMemo(() => users.slice(0, 4), [users]);
 
   const timeAgo = (iso: string) => {
+    if (!iso) return '—';
     const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return '';
+    if (Number.isNaN(date.getTime())) return '—';
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
@@ -81,18 +80,12 @@ export default function AdminDashboard() {
         <p className="text-slate-400">Platform overview and management console — ISquare Tech Solutions</p>
       </div>
 
-      {/* Alert */}
-      <div className="flex items-center gap-3 p-4 bg-amber-500/8 border border-amber-500/20 rounded-xl mb-6">
-        <AlertTriangle size={16} className="text-amber-400 flex-shrink-0" />
-        <p className="text-amber-300 text-sm">3 instructor applications are awaiting review. <Link to="/admin/users" className="underline underline-offset-2 font-medium">Review now →</Link></p>
-      </div>
-
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard icon={<Users size={18} />} label="Total Users" value={analytics?.totalUsers ?? '—'} color="from-indigo-500 to-purple-500" />
         <StatCard icon={<GraduationCap size={18} />} label="Students" value={analytics?.totalStudents ?? '—'} color="from-blue-500 to-cyan-500" />
         <StatCard icon={<BookOpen size={18} />} label="Courses" value={analytics?.totalCourses ?? '—'} color="from-emerald-500 to-teal-500" />
-        <StatCard icon={<DollarSign size={18} />} label="Platform Revenue" value={platformRevenue === 0 ? '—' : formatINRCompact(platformRevenue)} color="from-orange-500 to-red-500" sub="Not available" />
+        <StatCard icon={<TrendingUp size={18} />} label="Enrollments" value={analytics?.totalEnrollments ?? '—'} color="from-orange-500 to-red-500" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -128,28 +121,6 @@ export default function AdminDashboard() {
 
         {/* Sidebar */}
         <div className="space-y-5">
-          {/* Platform Health */}
-          <div className="card p-5">
-            <h3 className="text-white font-bold mb-4">Platform Health</h3>
-            <div className="space-y-4">
-              {[
-                { label: 'Server Uptime', value: 99.9, color: 'bg-emerald-500' },
-                { label: 'Course Completion Rate', value: 72, color: 'bg-indigo-500' },
-                { label: 'Student Satisfaction', value: 96, color: 'bg-blue-500' },
-              ].map(item => (
-                <div key={item.label}>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-slate-400">{item.label}</span>
-                    <span className="text-white font-medium">{item.value}%</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.value}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Quick Actions */}
           <div className="card p-5">
             <h3 className="text-white font-bold mb-4">Admin Actions</h3>
