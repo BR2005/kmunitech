@@ -19,16 +19,9 @@ import Footer from '../../components/layout/Footer';
 import CourseCard from '../../components/common/CourseCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { formatINRCompact, formatPriceINR } from '../../utils/currency';
-import { fetchFeaturedCourses } from '../../utils/api';
+import { fetchFeaturedCourses, fetchHomeStats, HomeStats } from '../../utils/api';
 import { Course } from '../../types';
 import { collaborations } from '../../data/collaborations';
-
-const stats = [
-  { value: '50K+', label: 'Students Enrolled', icon: Users },
-  { value: '200+', label: 'Expert Courses', icon: BookOpen },
-  { value: '98%', label: 'Satisfaction Rate', icon: Star },
-  { value: '150+', label: 'Pro Instructors', icon: Award },
-];
 
 const features = [
   {
@@ -62,6 +55,8 @@ export default function HomePage() {
   const [featuredCourses, setFeaturedCourses] = useState<Course[]>([]);
   const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
   const [featuredError, setFeaturedError] = useState('');
+  const [homeStats, setHomeStats] = useState<HomeStats | null>(null);
+  const [isLoadingHomeStats, setIsLoadingHomeStats] = useState(true);
   const revenueThisMonth = 355240; // approx conversion from $4,280
   const baseUrl = import.meta.env.BASE_URL;
   const logoSrc = `${baseUrl}kmunitech-logo.jpeg`;
@@ -87,6 +82,71 @@ export default function HomePage() {
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const data = await fetchHomeStats();
+        if (!mounted) return;
+        setHomeStats(data);
+      } catch (e: any) {
+        if (!mounted) return;
+        setHomeStats(null);
+      } finally {
+        if (!mounted) return;
+        setIsLoadingHomeStats(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const formatCompactCount = (value: number) =>
+    new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+
+  const stats = [
+    {
+      value: isLoadingHomeStats
+        ? '...'
+        : homeStats
+          ? formatCompactCount(homeStats.studentsEnrolled)
+          : '50K+',
+      label: 'Students Enrolled',
+      icon: Users,
+    },
+    {
+      value: isLoadingHomeStats
+        ? '...'
+        : homeStats
+          ? formatCompactCount(homeStats.expertCourses)
+          : '200+',
+      label: 'Expert Courses',
+      icon: BookOpen,
+    },
+    {
+      value: isLoadingHomeStats
+        ? '...'
+        : homeStats
+          ? homeStats.satisfactionRate == null
+            ? '—'
+            : `${homeStats.satisfactionRate}%`
+          : '98%',
+      label: 'Satisfaction Rate',
+      icon: Star,
+    },
+    {
+      value: isLoadingHomeStats
+        ? '...'
+        : homeStats
+          ? formatCompactCount(homeStats.proInstructors)
+          : '150+',
+      label: 'Pro Instructors',
+      icon: Award,
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#0d0f1a]">
       <Navbar />
@@ -101,86 +161,154 @@ export default function HomePage() {
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-          <div className="max-w-3xl">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 mb-8 animate-slide-up stagger-1">
-              <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" />
-              <span className="text-indigo-300 text-sm font-medium">
-                Now featuring 200+ expert courses
-              </span>
-            </div>
-
-            {/* Brand mark */}
-            <div className="flex items-center gap-3 mb-6 animate-slide-up stagger-1">
-              <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img
-                  src={logoSrc}
-                  alt="KMUniTech"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div className="text-slate-300 text-sm leading-snug">
-                <p className="text-white font-semibold text-base">KMUniTech</p>
-                <p>Universal Tech Solutions — learn, build, scale.</p>
-              </div>
-            </div>
-
-            {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6 animate-slide-up stagger-2">
-              Learn Skills That
-              <span className="block gradient-text">Actually Matter</span>
-            </h1>
-
-            <p className="text-slate-400 text-xl leading-relaxed mb-10 max-w-2xl animate-slide-up stagger-3">
-              Access world-class education from expert instructors. Whether
-              you're starting out or leveling up — KMUniTech has the course for
-              you.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12 animate-slide-up stagger-4">
-              <Link
-                to="/signup"
-                className="btn-primary flex items-center gap-2 text-base py-3.5 px-8"
-              >
-                Get Started Free <ArrowRight size={18} />
-              </Link>
-              <button
-                onClick={() => navigate('/courses')}
-                className="btn-secondary flex items-center gap-2 text-base py-3.5"
-              >
-                <Play size={16} className="text-indigo-400" />
-                Browse Courses
-              </button>
-            </div>
-
-            {/* Social Proof */}
-            <div className="flex items-center gap-4 animate-slide-up stagger-5">
-              <div className="flex -space-x-2">
-                {['A', 'B', 'C', 'D', 'E'].map((l, i) => (
-                  <div
-                    key={i}
-                    className="w-9 h-9 rounded-full border-2 border-[#0d0f1a] flex items-center justify-center text-xs font-bold text-white"
-                    style={{ background: `hsl(${i * 60 + 220}, 70%, 55%)` }}
-                  >
-                    {l}
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star
-                      key={i}
-                      size={13}
-                      className="fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                  <span className="text-white font-bold ml-1 text-sm">4.9</span>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-14 items-center">
+            {/* Left */}
+            <div className="max-w-3xl">
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-7 animate-slide-up stagger-1">
+                <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5">
+                  <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse" />
+                  <span className="text-indigo-300 text-sm font-medium">
+                    Now featuring 200+ expert courses
+                  </span>
                 </div>
-                <p className="text-slate-400 text-xs">
-                  Trusted by 50,000+ students
+                <Link
+                  to="/unilink"
+                  className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 hover:bg-emerald-500/15 transition-all"
+                >
+                  <span className="text-emerald-300 text-sm font-semibold">Free webinar & workshops</span>
+                  <ArrowRight size={16} className="text-emerald-300" />
+                </Link>
+              </div>
+
+              {/* Brand mark */}
+              <div className="flex items-center gap-3 mb-6 animate-slide-up stagger-1">
+                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center">
+                  <img
+                    src={logoSrc}
+                    alt="KMUniTech"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="text-slate-300 text-sm leading-snug">
+                  <p className="text-white font-semibold text-base">KMUniTech</p>
+                  <p>Universal Tech Solutions — learn, build, scale.</p>
+                </div>
+              </div>
+
+              {/* Headline */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.08] mb-6 animate-slide-up stagger-2">
+                Learn Skills That
+                <span className="block gradient-text">Actually Matter</span>
+              </h1>
+
+              <p className="text-slate-400 text-xl leading-relaxed mb-10 max-w-2xl animate-slide-up stagger-3">
+                Access world-class education from expert instructors. Whether you're starting out or leveling up —
+                KMUniTech has the right learning path for you.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-10 animate-slide-up stagger-4">
+                <Link
+                  to="/signup"
+                  className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-8"
+                >
+                  Get Started Free <ArrowRight size={18} />
+                </Link>
+                <button
+                  onClick={() => navigate('/courses')}
+                  className="btn-secondary flex items-center justify-center gap-2 text-base py-3.5"
+                >
+                  <Play size={16} className="text-indigo-400" />
+                  Browse Courses
+                </button>
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex items-center gap-4 animate-slide-up stagger-5">
+                <div className="flex -space-x-2">
+                  {['A', 'B', 'C', 'D', 'E'].map((l, i) => (
+                    <div
+                      key={i}
+                      className="w-9 h-9 rounded-full border-2 border-[#0d0f1a] flex items-center justify-center text-xs font-bold text-white"
+                      style={{ background: `hsl(${i * 60 + 220}, 70%, 55%)` }}
+                    >
+                      {l}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        size={13}
+                        className="fill-amber-400 text-amber-400"
+                      />
+                    ))}
+                    <span className="text-white font-bold ml-1 text-sm">4.9</span>
+                  </div>
+                  <p className="text-slate-400 text-xs">
+                    Trusted by 50,000+ students
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="relative">
+              <div className="absolute -top-10 -left-10 w-52 h-52 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-12 -right-12 w-72 h-72 bg-purple-600/8 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="card p-6 md:p-8">
+                <p className="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-5">
+                  Start Here
                 </p>
+
+                <div className="space-y-3">
+                  <Link
+                    to="/self-learn"
+                    className="group block bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-emerald-500/30 transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-white font-bold">Self Learn Courses</p>
+                        <p className="text-slate-400 text-sm mt-1">HTML & CSS with 3 levels</p>
+                      </div>
+                      <span className="badge-free">Start course</span>
+                    </div>
+                    <div className="mt-4 inline-flex items-center gap-2 text-emerald-300 font-semibold text-sm">
+                      Start now <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </Link>
+
+                  <button
+                    onClick={() => navigate('/courses')}
+                    className="w-full text-left bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all"
+                  >
+                    <p className="text-white font-bold">Browse All Courses</p>
+                    <p className="text-slate-400 text-sm mt-1">Explore free and paid courses</p>
+                    <div className="mt-4 inline-flex items-center gap-2 text-slate-300 font-semibold text-sm">
+                      Browse <ArrowRight size={16} />
+                    </div>
+                  </button>
+
+                  <Link
+                    to="/unilink"
+                    className="group block bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-indigo-500/30 transition-all"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-white font-bold">Unilink</p>
+                        <p className="text-slate-400 text-sm mt-1">Free webinar & workshops + live updates</p>
+                      </div>
+                      <span className="badge-level">Free</span>
+                    </div>
+                    <div className="mt-4 inline-flex items-center gap-2 text-indigo-300 font-semibold text-sm">
+                      Join now <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -329,6 +457,30 @@ export default function HomePage() {
           >
             View All Partners <ArrowRight size={15} />
           </Link>
+        </div>
+
+        <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600/15 to-purple-600/15 border border-indigo-500/20 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+            <div className="absolute -top-10 -left-10 w-48 h-48 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 -right-10 w-56 h-56 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 mb-2">
+                <span className="badge-free">Free</span>
+                <span className="text-slate-400 text-xs font-semibold">Unilink</span>
+              </div>
+              <p className="text-white font-bold text-lg sm:text-xl">
+                Want free webinar & workshops?
+              </p>
+              <p className="text-slate-400 text-sm mt-1">
+                Join Unilink to access live sessions and updates.
+              </p>
+            </div>
+
+            <Link to="/unilink" className="btn-primary text-sm py-3 px-8 inline-flex items-center gap-2 self-stretch sm:self-auto justify-center">
+              Join Unilink <ArrowRight size={16} />
+            </Link>
+          </div>
         </div>
       </section>
 

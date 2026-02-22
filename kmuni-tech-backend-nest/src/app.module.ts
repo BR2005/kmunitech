@@ -5,6 +5,7 @@ import { User } from './entities/user.entity';
 import { Course } from './entities/course.entity';
 import { Lesson } from './entities/lesson.entity';
 import { Enrollment } from './entities/enrollment.entity';
+import { UnilinkLead } from './entities/unilink-lead.entity';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { CoursesController } from './courses/courses.controller';
@@ -18,6 +19,10 @@ import { MediaController } from './media/media.controller';
 import { RolesGuard } from './common/auth/roles.guard';
 import { AdminSeeder } from './seed/admin.seeder';
 import { HealthController } from './health.controller';
+import { UnilinkController } from './unilink/unilink.controller';
+import { UnilinkService } from './unilink/unilink.service';
+import { PublicController } from './public/public.controller';
+import { PublicService } from './public/public.service';
 
 @Module({
   imports: [
@@ -42,7 +47,7 @@ import { HealthController } from './health.controller';
                 database: process.env.DB_NAME || 'kmunitech',
               }),
           ...sslConfig,
-          entities: [User, Course, Lesson, Enrollment],
+          entities: [User, Course, Lesson, Enrollment, UnilinkLead],
           synchronize: true,
           retryAttempts: 10,
           retryDelay: 3000,
@@ -52,7 +57,7 @@ import { HealthController } from './health.controller';
         };
       },
     }),
-    TypeOrmModule.forFeature([User, Course, Lesson, Enrollment]),
+    TypeOrmModule.forFeature([User, Course, Lesson, Enrollment, UnilinkLead]),
     AuthModule,
   ],
   controllers: [
@@ -63,6 +68,8 @@ import { HealthController } from './health.controller';
     InstructorController,
     AdminController,
     MediaController,
+    UnilinkController,
+    PublicController,
   ],
   providers: [
     AuthService,
@@ -71,6 +78,8 @@ import { HealthController } from './health.controller';
     InstructorService,
     RolesGuard,
     AdminSeeder,
+    UnilinkService,
+    PublicService,
   ],
 })
 export class AppModule {}

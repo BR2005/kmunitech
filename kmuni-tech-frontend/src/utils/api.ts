@@ -110,6 +110,19 @@ type CreateInstructorCourseRequest = {
   lessons: CreateInstructorLessonRequest[];
 };
 
+type RegisterUnilinkLeadRequest = {
+  name: string;
+  phone: string;
+};
+
+export type HomeStats = {
+  studentsEnrolled: number;
+  expertCourses: number;
+  satisfactionRate: number | null;
+  proInstructors: number;
+  updatedAt: string;
+};
+
 async function apiFetch<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const headers = {
@@ -155,6 +168,17 @@ async function apiUpload<T>(path: string, formData: FormData, token: string): Pr
   }
 
   return payload as T;
+}
+
+export async function registerUnilinkLead(payload: RegisterUnilinkLeadRequest) {
+  return apiFetch<{ success: boolean; id?: string; message?: string }>('/api/unilink/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchHomeStats() {
+  return apiFetch<HomeStats>('/api/public/home-stats');
 }
 
 const toUser = (apiUser: ApiUser): User => ({

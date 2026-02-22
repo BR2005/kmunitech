@@ -58,6 +58,12 @@ export default function Navbar() {
             <Link to="/courses" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
               Courses
             </Link>
+            <Link to="/unilink" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
+              Unilink
+            </Link>
+            <Link to="/self-learn" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
+              Self Learn
+            </Link>
             <Link to="/about" className="text-slate-300 hover:text-white px-4 py-2 rounded-lg hover:bg-white/5 transition-all text-sm font-medium">
               About
             </Link>
@@ -133,6 +139,8 @@ export default function Navbar() {
         <div className="md:hidden bg-[#0d0f1a]/98 border-t border-white/5 px-4 py-4 space-y-2 animate-slide-up">
           <Link to="/" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Home</Link>
           <Link to="/courses" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Courses</Link>
+          <Link to="/unilink" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Unilink</Link>
+          <Link to="/self-learn" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Self Learn</Link>
           <Link to="/about" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">About</Link>
           <Link to="/collaborations" className="block px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">Collaborations</Link>
           {isAuthenticated && user ? (
