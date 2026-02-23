@@ -17,7 +17,7 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const defaultRole = (location.state as any)?.role || 'student';
-  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
+  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.jpeg`;
 
   const [role, setRole] = useState<'student' | 'instructor'>(defaultRole);
   const [name, setName] = useState('');
@@ -52,6 +52,13 @@ export default function SignupPage() {
       role,
     });
     if (result.success) {
+      if (result.pendingApproval) {
+        navigate('/login', {
+          replace: true,
+          state: { notice: result.message || 'Instructor account pending approval.' },
+        });
+        return;
+      }
       navigate(
         role === 'student' ? '/student/dashboard' : '/instructor/dashboard',
         { replace: true }
@@ -79,11 +86,11 @@ export default function SignupPage() {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
         <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
           <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-            <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
+            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <span className="text-white font-bold text-lg">KMUni</span>
-            <span className="text-indigo-400 font-bold text-lg">Tech</span>
+            <span className="text-white font-bold text-lg">KM </span>
+            <span className="text-indigo-400 font-bold text-lg">UniTech</span>
           </div>
         </Link>
 
@@ -323,7 +330,7 @@ export default function SignupPage() {
 
           <h1 className="text-3xl font-bold text-white mb-2">Create account</h1>
           <p className="text-slate-400 mb-8">
-            Join KMUniTech as a student or instructor
+            Join KM UniTech as a student or instructor
           </p>
 
           {/* Role Toggle */}

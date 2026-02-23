@@ -4,7 +4,9 @@ import { fetchCurrentUser, loginUser, signupUser } from '../utils/api';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<{ success: boolean; message: string }>;
-  signup: (data: SignupData) => Promise<{ success: boolean; message: string }>;
+  signup: (
+    data: SignupData,
+  ) => Promise<{ success: boolean; message: string; pendingApproval?: boolean }>;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
 }
@@ -81,10 +83,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const res = await signupUser(data);
-      if (!res.success || !res.user || !res.token) {
+      if (!res.success || !res.user) {
         dispatch({ type: 'SET_LOADING', payload: false });
         return { success: false, message: res.message || 'Signup failed.' };
       }
+
+      // Instructor approvals: backend returns success + user but no token.
+      if (!res.token) {
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return {
+          success: true,
+          pendingApproval: true,
+          message:
+            res.message ||
+            'Instructor account request submitted. Please wait for admin approval before logging in.',
+        };
+      }
+
       localStorage.setItem('kmuni_token', res.token);
       localStorage.setItem('kmuni_user', JSON.stringify(res.user));
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user: res.user, token: res.token } });

@@ -7,13 +7,16 @@ export default function LoginPage() {
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from || '/';
-  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.png.jpeg`;
+  const state = location.state as any;
+  const from = state?.from || '/';
+  const noticeFromState = (state?.notice as string | undefined) || '';
+  const logoSrc = `${import.meta.env.BASE_URL}kmunitech-logo.jpeg`;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState(noticeFromState);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +47,11 @@ export default function LoginPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
         <Link to="/" className="flex items-center gap-3 transition-all group mb-12">
           <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-            <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
+            <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <span className="text-white font-bold text-lg">KMUni</span>
-            <span className="text-indigo-400 font-bold text-lg">Tech</span>
+            <span className="text-white font-bold text-lg">KM </span>
+            <span className="text-indigo-400 font-bold text-lg">UniTech</span>
           </div>
         </Link>
 
@@ -281,6 +284,20 @@ export default function LoginPage() {
           <p className="text-slate-400 mb-8">
             Enter your credentials to access your account
           </p>
+
+          {notice && (
+            <div className="flex items-start gap-2.5 p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl mb-5 text-indigo-300 text-sm">
+              <BookOpen size={16} className="flex-shrink-0 mt-0.5" />
+              <div className="flex-1">{notice}</div>
+              <button
+                type="button"
+                onClick={() => setNotice('')}
+                className="text-indigo-300/70 hover:text-indigo-200 text-xs"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="flex items-center gap-2.5 p-4 bg-red-500/10 border border-red-500/20 rounded-xl mb-5 text-red-400 text-sm">

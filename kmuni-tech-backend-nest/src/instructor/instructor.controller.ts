@@ -12,13 +12,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { JwtAuthGuard } from '../common/auth/jwt-auth.guard';
+import { ApprovedInstructorGuard } from '../common/auth/approved-instructor.guard';
 import { Roles } from '../common/auth/roles.decorator';
 import { RolesGuard } from '../common/auth/roles.guard';
 import { CurrentUser, JwtUser } from '../common/auth/current-user.decorator';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { InstructorService } from './instructor.service';
 
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, ApprovedInstructorGuard)
 @Roles('instructor')
 @Controller('instructor')
 export class InstructorController {

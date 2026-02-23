@@ -11,7 +11,7 @@ export default function AdminSettings() {
         <div className="card p-6">
           <div className="flex items-center gap-2.5 mb-5"><Settings size={18} className="text-orange-400" /><h2 className="text-white font-semibold">Platform Settings</h2></div>
           <div className="space-y-4">
-            <div><label className="block text-slate-300 text-sm font-medium mb-2">Platform Name</label><input defaultValue="KMUniTech" className="input-field" /></div>
+            <div><label className="block text-slate-300 text-sm font-medium mb-2">Platform Name</label><input defaultValue="KM UniTech" className="input-field" /></div>
             <div><label className="block text-slate-300 text-sm font-medium mb-2">Support Email</label><input defaultValue="support@kmunitech.com" type="email" className="input-field" /></div>
             <div><label className="block text-slate-300 text-sm font-medium mb-2">Admin Contact (ISquare)</label><input defaultValue="admin@isquare.com" type="email" className="input-field" /></div>
           </div>

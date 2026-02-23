@@ -1,15 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import { Search, Key, Trash2, Edit3, UserPlus } from 'lucide-react';
+import { Search, Key, Trash2, Edit3, UserPlus, UserCheck } from 'lucide-react';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { User } from '../../types';
 import { useAuth } from '../../context/AuthContext';
-import { adminDeleteUser, adminResetUserPassword, fetchAdminUsers } from '../../utils/api';
+import { adminApproveInstructor, adminDeleteUser, adminResetUserPassword, fetchAdminUsers } from '../../utils/api';
 
 const roleColors: Record<string, string> = {
   student: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
   instructor: 'bg-blue-500/15 text-blue-400 border-blue-500/20',
   admin: 'bg-orange-500/15 text-orange-400 border-orange-500/20',
+};
+
+const approvalColors = {
+  pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20',
 };
 
 export default function AdminUsers() {
@@ -95,6 +99,20 @@ export default function AdminUsers() {
     }
   };
 
+  const handleApproveInstructor = async (userId: string) => {
+    if (!token) return;
+    try {
+      setActionError('');
+      setIsWorking(true);
+      await adminApproveInstructor(userId, token);
+      setUsers(prev => prev.map(u => (u.id === userId ? { ...u, isApproved: true } : u)));
+    } catch (e: any) {
+      setActionError(e?.message || 'Failed to approve instructor');
+    } finally {
+      setIsWorking(false);
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="flex items-center justify-between mb-8">
@@ -145,11 +163,25 @@ export default function AdminUsers() {
                   </div>
                 </td>
                 <td className="px-5 py-4 hidden md:table-cell">
-                  <span className={`badge ${roleColors[user.role]} capitalize text-xs`}>{user.role}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`badge ${roleColors[user.role]} capitalize text-xs`}>{user.role}</span>
+                    {user.role === 'instructor' && user.isApproved === false && (
+                      <span className={`badge ${approvalColors.pending} text-xs`}>Pending</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-5 py-4 text-slate-500 text-xs hidden lg:table-cell">{formatJoined(user.createdAt)}</td>
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-2 justify-end">
+                    {user.role === 'instructor' && user.isApproved === false && (
+                      <button
+                        disabled={isWorking}
+                        onClick={() => handleApproveInstructor(user.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/40 rounded-lg text-emerald-300 text-xs font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <UserCheck size={12} /> Approve
+                      </button>
+                    )}
                     <button onClick={() => { setResetModal(user.id); setNewPwd(''); }}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 hover:border-indigo-500/40 rounded-lg text-indigo-400 text-xs font-medium transition-all">
                       <Key size={12} /> Reset PWD

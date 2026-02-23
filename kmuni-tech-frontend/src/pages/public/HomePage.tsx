@@ -186,12 +186,12 @@ export default function HomePage() {
                 <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl overflow-hidden flex items-center justify-center">
                   <img
                     src={logoSrc}
-                    alt="KMUniTech"
+                    alt="KM UniTech"
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="text-slate-300 text-sm leading-snug">
-                  <p className="text-white font-semibold text-base">KMUniTech</p>
+                  <p className="text-white font-semibold text-base">KM UniTech</p>
                   <p>Universal Tech Solutions — learn, build, scale.</p>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export default function HomePage() {
 
               <p className="text-slate-400 text-xl leading-relaxed mb-10 max-w-2xl animate-slide-up stagger-3">
                 Access world-class education from expert instructors. Whether you're starting out or leveling up —
-                KMUniTech has the right learning path for you.
+                KM UniTech has the right learning path for you.
               </p>
 
               {/* CTA Buttons */}
@@ -489,7 +489,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <p className="text-indigo-400 text-sm font-semibold tracking-wider uppercase mb-2">
-              Why KMUniTech?
+              Why KM UniTech?
             </p>
             <h2 className="section-title">Everything You Need to Succeed</h2>
           </div>
@@ -528,7 +528,7 @@ export default function HomePage() {
             </h2>
             <p className="text-slate-400 leading-relaxed mb-8">
               Join our growing community of expert instructors. Create courses,
-              reach thousands of students, and build your brand on KMUniTech.
+              reach thousands of students, and build your brand on KM UniTech.
             </p>
             {[
               'Create and publish courses easily',

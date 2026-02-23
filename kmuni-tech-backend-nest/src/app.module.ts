@@ -17,6 +17,7 @@ import { InstructorService } from './instructor/instructor.service';
 import { AdminController } from './admin/admin.controller';
 import { MediaController } from './media/media.controller';
 import { RolesGuard } from './common/auth/roles.guard';
+import { ApprovedInstructorGuard } from './common/auth/approved-instructor.guard';
 import { AdminSeeder } from './seed/admin.seeder';
 import { HealthController } from './health.controller';
 import { UnilinkController } from './unilink/unilink.controller';
@@ -77,6 +78,7 @@ import { PublicService } from './public/public.service';
     StudentService,
     InstructorService,
     RolesGuard,
+    ApprovedInstructorGuard,
     AdminSeeder,
     UnilinkService,
     PublicService,

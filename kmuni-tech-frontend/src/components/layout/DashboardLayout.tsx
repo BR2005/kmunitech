@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }: Props) {
           <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
             <BookOpen size={15} className="text-white" />
           </div>
-          <span className="text-white font-bold">KMUni<span className="text-indigo-400"> Tech</span></span>
+          <span className="text-white font-bold">KM <span className="text-indigo-400">UniTech</span></span>
         </Link>
       </div>
 

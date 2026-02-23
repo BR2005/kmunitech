@@ -14,7 +14,7 @@ export default function Footer() {
                 <BookOpen size={18} className="text-white" />
               </div>
               <span className="text-white font-bold text-lg">
-                KMUni<span className="text-indigo-400">Tech</span>
+                KM <span className="text-indigo-400">UniTech</span>
               </span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed">
@@ -110,7 +110,7 @@ export default function Footer() {
 
         <div className="border-t border-white/5 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-slate-500 text-sm">
-            © 2024 KMUniTech. All rights reserved.
+            © 2026 KM UniTech. All rights reserved.
           </p>
           <p className="text-slate-500 text-sm">
             Built with ❤️ by{' '}

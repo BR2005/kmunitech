@@ -26,6 +26,9 @@ export class User {
   @Column({ type: 'text', default: UserRole.STUDENT })
   role!: UserRole;
 
+  @Column({ type: 'boolean', default: true })
+  isApproved!: boolean;
+
   @OneToMany(() => Enrollment, (e) => e.student)
   enrollments?: Enrollment[];
 

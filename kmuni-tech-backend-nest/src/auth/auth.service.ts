@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ type ApiUser = {
   name: string;
   email: string;
   role: 'student' | 'instructor' | 'admin';
+  isApproved?: boolean;
   avatar?: string;
   bio?: string;
   createdAt?: string;
@@ -46,6 +48,7 @@ function sanitizeUser(user: User): ApiUser {
     name: user.name,
     email: user.email,
     role: toAppRole(user.role),
+    isApproved: user.role === UserRole.INSTRUCTOR ? Boolean(user.isApproved) : true,
   };
 }
 
@@ -64,15 +67,26 @@ export class AuthService {
     const existing = await this.usersRepo.findOne({ where: { email: dto.email } });
     if (existing) throw new BadRequestException('Email already in use');
 
+    const entityRole = toEntityRole(dto.role);
     const user = this.usersRepo.create({
       name: dto.name,
       email: dto.email,
       password: hashPassword(dto.password),
-      role: toEntityRole(dto.role),
+      role: entityRole,
+      isApproved: entityRole === UserRole.INSTRUCTOR ? false : true,
     });
     const saved = await this.usersRepo.save(user);
-    const token = await this.signToken(saved);
 
+    // Instructor accounts require admin approval before they can log in.
+    if (saved.role === UserRole.INSTRUCTOR && saved.isApproved === false) {
+      return {
+        success: true,
+        message: 'Instructor account request submitted. Please wait for admin approval before logging in.',
+        user: sanitizeUser(saved),
+      };
+    }
+
+    const token = await this.signToken(saved);
     return { success: true, user: sanitizeUser(saved), token };
   }
 
@@ -80,6 +94,12 @@ export class AuthService {
     const user = await this.usersRepo.findOne({ where: { email: dto.email } });
     if (!user || !verifyPassword(dto.password, user.password)) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (user.role === UserRole.INSTRUCTOR && user.isApproved === false) {
+      throw new ForbiddenException(
+        'Instructor account pending admin approval. Please try again after approval.',
+      );
     }
     const token = await this.signToken(user);
     return { success: true, user: sanitizeUser(user), token };

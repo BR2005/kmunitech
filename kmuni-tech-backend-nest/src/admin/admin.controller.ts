@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtAuthGuard } from '../common/auth/jwt-auth.guard';
@@ -74,8 +74,36 @@ export class AdminController {
           : u.role === 'INSTRUCTOR'
             ? 'instructor'
             : 'student',
+      isApproved: u.role === 'INSTRUCTOR' ? Boolean(u.isApproved) : true,
       createdAt: '',
     }));
+  }
+
+  @Get('instructors/pending')
+  async pendingInstructors() {
+    const users = await this.usersRepo.find({
+      where: { role: UserRole.INSTRUCTOR, isApproved: false },
+    });
+    return users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: 'instructor',
+      isApproved: false,
+      createdAt: '',
+    }));
+  }
+
+  @Post('instructors/:userId/approve')
+  async approveInstructor(@Param('userId') userId: string) {
+    const user = await this.usersRepo.findOne({ where: { id: userId } });
+    if (!user) throw new BadRequestException('User not found');
+    if (user.role !== UserRole.INSTRUCTOR) {
+      throw new BadRequestException('User is not an instructor');
+    }
+    user.isApproved = true;
+    await this.usersRepo.save(user);
+    return { success: true };
   }
 
   @Post('users/:userId/reset-password')

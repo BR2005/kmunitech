@@ -24,7 +24,7 @@ export default function AboutPage() {
                             Empowering the Next Generation of <span className="gradient-text">Tech Leaders</span>
                         </h1>
                         <p className="text-slate-400 text-xl max-w-3xl mx-auto leading-relaxed">
-                            KMUniTech is a hybrid product- and service-based technology startup focused on IT education,
+                            KM UniTech is a hybrid product- and service-based technology startup focused on IT education,
                             software upskilling, and digital solutions. We bridge the gap between academic education
                             and industry requirements.
                         </p>
@@ -41,7 +41,7 @@ export default function AboutPage() {
                             <h3 className="text-xl font-bold text-white mb-4">Our Vision</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
                                 To build a unified platform for learning, innovation, and impact across diverse technology domains.
-                                "All Domains, One Destination – KMUniTech."
+                                "All Domains, One Destination – KM UniTech."
                             </p>
                         </div>
 
@@ -94,16 +94,16 @@ export default function AboutPage() {
                                 </h2>
                                 <div className="space-y-6 text-slate-300 text-lg leading-relaxed">
                                     <p>
-                                        Tharun Varshan U, the Founder and CEO of KMUniTech, established the organization with a
+                                        Tharun Varshan U, the Founder and CEO of KM UniTech, established the organization with a
                                         singular goal: to create a world where education is synonymous with impact.
                                     </p>
                                     <p>
                                         With deep expertise in software engineering and digital transformation, Tharun envisioned
-                                        KMUniTech as more than just an ed-tech platform. He built it as a hybrid ecosystem
+                                        KM UniTech as more than just an ed-tech platform. He built it as a hybrid ecosystem
                                         where practical skills meet social responsibility.
                                     </p>
                                     <p>
-                                        Under his leadership, KMUniTech has grown from a visionary startup to an MSME-approved
+                                        Under his leadership, KM UniTech has grown from a visionary startup to an MSME-approved
                                         entity serving individuals, institutions, and startups across India. His philosophy
                                         of "Empowering through Upskilling" continues to drive our innovation in every domain.
                                     </p>
@@ -140,7 +140,7 @@ export default function AboutPage() {
                     <h2 className="text-3xl font-bold text-white mb-6">Join Our Growing Community</h2>
                     <p className="text-slate-400 mb-10 max-w-xl mx-auto">
                         Whether you're a student looking to upskill, a college seeking workshops, or a startup needing
-                        solutions — KMUniTech is your destination.
+                        solutions — KM UniTech is your destination.
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Link to="/courses" className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2">

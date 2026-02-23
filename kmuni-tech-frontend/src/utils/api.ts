@@ -13,6 +13,7 @@ type ApiUser = {
   name: string;
   email: string;
   role: string;
+  isApproved?: boolean;
   avatar?: string;
   bio?: string;
   createdAt?: string;
@@ -186,6 +187,7 @@ const toUser = (apiUser: ApiUser): User => ({
   name: apiUser.name,
   email: apiUser.email,
   role: (apiUser.role as UserRole) ?? 'student',
+  isApproved: apiUser.isApproved ?? undefined,
   avatar: apiUser.avatar ?? undefined,
   bio: apiUser.bio ?? undefined,
   createdAt: apiUser.createdAt ?? '',
@@ -346,4 +348,8 @@ export async function adminResetUserPassword(userId: string, newPassword: string
 
 export async function adminDeleteUser(userId: string, token: string) {
   return apiFetch(`/api/admin/users/${userId}`, { method: 'DELETE' }, token);
+}
+
+export async function adminApproveInstructor(userId: string, token: string) {
+  return apiFetch(`/api/admin/instructors/${userId}/approve`, { method: 'POST' }, token);
 }

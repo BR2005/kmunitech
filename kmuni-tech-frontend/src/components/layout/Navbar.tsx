@@ -42,11 +42,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-11 h-11 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-all">
-              <img src={logoSrc} alt="KMUniTech logo" className="w-full h-full object-contain" />
+              <img src={logoSrc} alt="KM UniTech logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <span className="text-white font-bold text-lg">KMUni</span>
-              <span className="text-indigo-400 font-bold text-lg">Tech</span>
+              <span className="text-white font-bold text-lg">KM </span>
+              <span className="text-indigo-400 font-bold text-lg">UniTech</span>
             </div>
           </Link>
 

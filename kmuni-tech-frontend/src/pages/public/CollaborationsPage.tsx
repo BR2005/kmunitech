@@ -218,7 +218,7 @@ export default function CollaborationsPage() {
               <p className="text-white text-xl md:text-2xl font-light leading-relaxed mb-8 italic">
                 "To build a unified platform for learning, innovation, and
                 impact across diverse technology domains. All Domains, One
-                Destination – KMUniTech."
+                Destination – KM UniTech."
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 {[
