@@ -31,7 +31,11 @@ import { PublicService } from './public/public.service';
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         const databaseUrl = (process.env.DATABASE_URL || '').trim();
-        const useSsl = (process.env.DB_SSL || '').toLowerCase() === 'true';
+        const dbSslRaw = (process.env.DB_SSL || '').trim().toLowerCase();
+        const useSsl =
+          dbSslRaw.length > 0
+            ? dbSslRaw === 'true'
+            : Boolean(databaseUrl) || process.env.NODE_ENV === 'production';
         const sslConfig = useSsl ? { ssl: { rejectUnauthorized: false } } : {};
 
         return {
