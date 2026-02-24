@@ -7,6 +7,7 @@ import { Course } from './entities/course.entity';
 import { Lesson } from './entities/lesson.entity';
 import { Enrollment } from './entities/enrollment.entity';
 import { UnilinkLead } from './entities/unilink-lead.entity';
+import { UnilinkEvent } from './entities/unilink-event.entity';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { CoursesController } from './courses/courses.controller';
@@ -25,6 +26,7 @@ import { UnilinkController } from './unilink/unilink.controller';
 import { UnilinkService } from './unilink/unilink.service';
 import { PublicController } from './public/public.controller';
 import { PublicService } from './public/public.service';
+import { UnilinkEventsService } from './unilink-events/unilink-events.service';
 
 @Module({
   imports: [
@@ -105,7 +107,7 @@ import { PublicService } from './public/public.service';
                   database: process.env.DB_NAME || 'kmunitech',
                 }),
           ...(useSsl ? { ssl: sslOptions } : {}),
-          entities: [User, Course, Lesson, Enrollment, UnilinkLead],
+          entities: [User, Course, Lesson, Enrollment, UnilinkLead, UnilinkEvent],
           synchronize: true,
           retryAttempts: 10,
           retryDelay: 3000,
@@ -116,7 +118,7 @@ import { PublicService } from './public/public.service';
         };
       },
     }),
-    TypeOrmModule.forFeature([User, Course, Lesson, Enrollment, UnilinkLead]),
+    TypeOrmModule.forFeature([User, Course, Lesson, Enrollment, UnilinkLead, UnilinkEvent]),
     AuthModule,
   ],
   controllers: [
@@ -140,6 +142,7 @@ import { PublicService } from './public/public.service';
     AdminSeeder,
     UnilinkService,
     PublicService,
+    UnilinkEventsService,
   ],
 })
 export class AppModule {}

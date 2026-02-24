@@ -1,6 +1,9 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { JwtAuthGuard } from '../common/auth/jwt-auth.guard';
 import { Roles } from '../common/auth/roles.decorator';
 import { RolesGuard } from '../common/auth/roles.guard';
@@ -10,6 +13,9 @@ import { Enrollment } from '../entities/enrollment.entity';
 import { UserRole } from '../entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UnilinkEventsService } from '../unilink-events/unilink-events.service';
+import { CreateUnilinkEventDto } from '../unilink-events/dto/create-unilink-event.dto';
+import { UpdateUnilinkEventDto } from '../unilink-events/dto/update-unilink-event.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
@@ -21,6 +27,7 @@ export class AdminController {
     @InjectRepository(Enrollment)
     private readonly enrollmentsRepo: Repository<Enrollment>,
     private readonly auth: AuthService,
+    private readonly unilinkEvents: UnilinkEventsService,
   ) {}
 
   @Get('analytics')
@@ -116,5 +123,58 @@ export class AdminController {
   async deleteUser(@Param('userId') userId: string) {
     await this.usersRepo.delete({ id: userId });
     return { success: true };
+  }
+
+  @Get('unilink-events')
+  async listUnilinkEvents() {
+    return this.unilinkEvents.listAll();
+  }
+
+  @Post('unilink-events')
+  @UseInterceptors(
+    FileInterceptor('poster', {
+      storage: diskStorage({
+        destination: (_req: any, _file: any, cb: any) => cb(null, 'uploads'),
+        filename: (_req: any, file: any, cb: any) => {
+          const safeExt = extname(file.originalname || '') || '.png';
+          cb(null, `unilink-event-${Date.now()}${safeExt}`);
+        },
+      }),
+    }),
+  )
+  async createUnilinkEvent(
+    @Body() dto: CreateUnilinkEventDto,
+    @UploadedFile() poster: any,
+  ) {
+    if (!poster) throw new BadRequestException('Poster image is required');
+    if (poster.mimetype && typeof poster.mimetype === 'string' && !poster.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Poster must be an image');
+    }
+    const urlPath = `/uploads/${poster.filename}`;
+    return this.unilinkEvents.create({ title: dto.title, status: dto.status, posterUrl: urlPath });
+  }
+
+  @Patch('unilink-events/:id')
+  @UseInterceptors(
+    FileInterceptor('poster', {
+      storage: diskStorage({
+        destination: (_req: any, _file: any, cb: any) => cb(null, 'uploads'),
+        filename: (_req: any, file: any, cb: any) => {
+          const safeExt = extname(file.originalname || '') || '.png';
+          cb(null, `unilink-event-${Date.now()}${safeExt}`);
+        },
+      }),
+    }),
+  )
+  async updateUnilinkEvent(
+    @Param('id') id: string,
+    @Body() dto: UpdateUnilinkEventDto,
+    @UploadedFile() poster: any,
+  ) {
+    if (poster?.mimetype && typeof poster.mimetype === 'string' && !poster.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Poster must be an image');
+    }
+    const posterUrl = poster ? `/uploads/${poster.filename}` : undefined;
+    return this.unilinkEvents.update(id, { title: dto.title, status: dto.status, posterUrl });
   }
 }

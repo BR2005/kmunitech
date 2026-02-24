@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-import { Activity, Course, Enrollment, Lesson, LoginCredentials, SignupData, User, UserRole } from '../types';
+import { Activity, Course, Enrollment, Lesson, LoginCredentials, SignupData, UnilinkEvent, UnilinkEventStatus, User, UserRole } from '../types';
 
 export const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ??
@@ -148,14 +148,19 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, token?: stri
   return payload as T;
 }
 
-async function apiUpload<T>(path: string, formData: FormData, token: string): Promise<T> {
+async function apiUpload<T>(
+  path: string,
+  formData: FormData,
+  token: string,
+  method: 'POST' | 'PATCH' | 'PUT' = 'POST',
+): Promise<T> {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const headers = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
   const response = await fetch(`${API_BASE_URL}${normalizedPath}`, {
-    method: 'POST',
+    method,
     headers,
     body: formData,
   });
@@ -169,6 +174,46 @@ async function apiUpload<T>(path: string, formData: FormData, token: string): Pr
   }
 
   return payload as T;
+}
+
+export type PublicUnilinkEventsResponse = {
+  upcoming: UnilinkEvent[];
+  finished: UnilinkEvent[];
+};
+
+export async function fetchPublicUnilinkEvents() {
+  return apiFetch<PublicUnilinkEventsResponse>('/api/public/unilink-events');
+}
+
+export type AdminUnilinkEvent = UnilinkEvent & {
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export async function fetchAdminUnilinkEvents(token: string) {
+  return apiFetch<AdminUnilinkEvent[]>('/api/admin/unilink-events', { method: 'GET' }, token);
+}
+
+export async function createAdminUnilinkEvent(
+  input: { title: string; status: UnilinkEventStatus; poster: File },
+  token: string,
+) {
+  const form = new FormData();
+  form.append('title', input.title);
+  form.append('status', input.status);
+  form.append('poster', input.poster);
+  return apiUpload<AdminUnilinkEvent>('/api/admin/unilink-events', form, token, 'POST');
+}
+
+export async function updateAdminUnilinkEvent(
+  id: string,
+  input: { title?: string; poster?: File },
+  token: string,
+) {
+  const form = new FormData();
+  if (typeof input.title === 'string') form.append('title', input.title);
+  if (input.poster) form.append('poster', input.poster);
+  return apiUpload<AdminUnilinkEvent>(`/api/admin/unilink-events/${id}`, form, token, 'PATCH');
 }
 
 export async function registerUnilinkLead(payload: RegisterUnilinkLeadRequest) {

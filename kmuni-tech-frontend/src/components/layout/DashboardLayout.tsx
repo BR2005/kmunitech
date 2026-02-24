@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   BookOpen, LayoutDashboard, GraduationCap, Settings, LogOut,
   Menu, X, Bell, ChevronRight, Users, PlusCircle, BarChart3,
-  ShieldCheck, BookMarked, Award, Home
+  ShieldCheck, BookMarked, Award, Home, Images
 } from 'lucide-react';
 
 interface NavItem { label: string; icon: React.ElementType; path: string; }
@@ -31,6 +31,7 @@ const adminNav: NavItem[] = [
   { label: 'Courses', icon: BookOpen, path: '/admin/courses' },
   { label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
   { label: 'Security', icon: ShieldCheck, path: '/admin/security' },
+  { label: 'Unilink Events', icon: Images, path: '/admin/unilink-events' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 

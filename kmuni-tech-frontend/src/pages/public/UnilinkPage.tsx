@@ -1,8 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { Award, Users, Video } from 'lucide-react';
-import { registerUnilinkLead } from '../../utils/api';
+import { API_BASE_URL, fetchPublicUnilinkEvents, PublicUnilinkEventsResponse, registerUnilinkLead } from '../../utils/api';
+
+function toAbsoluteUrl(url: string) {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+}
 
 function normalizePhone(value: string) {
   return value.replace(/[^\d+]/g, '');
@@ -19,6 +25,9 @@ export default function UnilinkPage() {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [events, setEvents] = useState<PublicUnilinkEventsResponse>({ upcoming: [], finished: [] });
+  const [eventsLoading, setEventsLoading] = useState(true);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +54,24 @@ export default function UnilinkPage() {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setEventsLoading(true);
+        const data = await fetchPublicUnilinkEvents();
+        if (mounted) setEvents(data);
+      } catch {
+        if (mounted) setEvents({ upcoming: [], finished: [] });
+      } finally {
+        if (mounted) setEventsLoading(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0d0f1a]">
@@ -160,6 +187,57 @@ export default function UnilinkPage() {
               )}
             </section>
           </div>
+
+          {/* Events */}
+          <section className="mt-14 space-y-10">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Upcoming Events</h2>
+              <p className="text-slate-400 mt-1 text-sm">Latest webinars and workshops.</p>
+
+              {eventsLoading ? (
+                <p className="text-slate-400 text-sm mt-4">Loading...</p>
+              ) : events.upcoming.length ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+                  {events.upcoming.map((ev) => (
+                    <div key={ev.id} className="card overflow-hidden">
+                      <div className="border-b border-white/10 bg-white/5">
+                        <img src={toAbsoluteUrl(ev.posterUrl)} alt={ev.title} className="w-full h-52 object-cover" />
+                      </div>
+                      <div className="p-5">
+                        <p className="text-white font-semibold">{ev.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-400 text-sm mt-4">No upcoming events posted yet.</p>
+              )}
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-bold text-white">Finished Events</h2>
+              <p className="text-slate-400 mt-1 text-sm">Completed webinars and workshops.</p>
+
+              {eventsLoading ? (
+                <p className="text-slate-400 text-sm mt-4">Loading...</p>
+              ) : events.finished.length ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+                  {events.finished.map((ev) => (
+                    <div key={ev.id} className="card overflow-hidden">
+                      <div className="border-b border-white/10 bg-white/5">
+                        <img src={toAbsoluteUrl(ev.posterUrl)} alt={ev.title} className="w-full h-52 object-cover" />
+                      </div>
+                      <div className="p-5">
+                        <p className="text-white font-semibold">{ev.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-400 text-sm mt-4">No finished events posted yet.</p>
+              )}
+            </div>
+          </section>
         </div>
       </main>
 

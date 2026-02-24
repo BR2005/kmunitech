@@ -80,3 +80,12 @@ export interface Enrollment {
   enrolledAt: string;
   completedAt: string | null;
 }
+
+export type UnilinkEventStatus = 'upcoming' | 'finished';
+
+export interface UnilinkEvent {
+  id: string;
+  title: string;
+  status: UnilinkEventStatus;
+  posterUrl: string;
+}

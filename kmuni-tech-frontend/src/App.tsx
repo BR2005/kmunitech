@@ -33,6 +33,7 @@ const AdminCourses = React.lazy(() => import('./pages/admin/AdminCourses'));
 const AdminAnalytics = React.lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminSecurity = React.lazy(() => import('./pages/admin/AdminSecurity'));
 const AdminSettings = React.lazy(() => import('./pages/admin/AdminSettings'));
+const AdminUnilinkEvents = React.lazy(() => import('./pages/admin/AdminUnilinkEvents'));
 
 function App() {
   return (
@@ -100,6 +101,10 @@ function App() {
             } />
             <Route path="/admin/settings" element={
               <ProtectedRoute allowedRoles={['admin']}><AdminSettings /></ProtectedRoute>
+            } />
+
+            <Route path="/admin/unilink-events" element={
+              <ProtectedRoute allowedRoles={['admin']}><AdminUnilinkEvents /></ProtectedRoute>
             } />
 
             {/* ── Fallback ────────────────────────────────────────── */}
