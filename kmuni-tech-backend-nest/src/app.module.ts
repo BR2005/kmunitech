@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as fs from 'node:fs';
 import { AuthModule } from './auth/auth.module';
 import { User } from './entities/user.entity';
 import { Course } from './entities/course.entity';
@@ -34,7 +35,28 @@ import { PublicService } from './public/public.service';
         const dbHost = (process.env.DB_HOST || '').trim();
         const dbSslRaw = (process.env.DB_SSL || '').trim().toLowerCase();
         const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'true' : true;
-        const sslConfig = useSsl ? { ssl: { rejectUnauthorized: false } } : {};
+        const rejectUnauthorizedRaw = (
+          process.env.DB_SSL_REJECT_UNAUTHORIZED || ''
+        )
+          .trim()
+          .toLowerCase();
+        const rejectUnauthorized =
+          rejectUnauthorizedRaw.length > 0 ? rejectUnauthorizedRaw === 'true' : false;
+
+        const dbSslCaInline = (process.env.DB_SSL_CA || '').trim();
+        const dbSslCaPath = (process.env.DB_SSL_CA_PATH || '').trim();
+
+        const sslOptions =
+          useSsl === true
+            ? {
+                rejectUnauthorized,
+                ...(dbSslCaInline
+                  ? { ca: dbSslCaInline.replace(/\\n/g, '\n') }
+                  : dbSslCaPath
+                    ? { ca: fs.readFileSync(dbSslCaPath, 'utf8') }
+                    : {}),
+              }
+            : undefined;
 
         return {
           type: 'postgres' as const,
@@ -57,13 +79,14 @@ import { PublicService } from './public/public.service';
                   password: process.env.DB_PASS || 'postgres',
                   database: process.env.DB_NAME || 'kmunitech',
                 }),
-          ...sslConfig,
+          ...(useSsl ? { ssl: sslOptions } : {}),
           entities: [User, Course, Lesson, Enrollment, UnilinkLead],
           synchronize: true,
           retryAttempts: 10,
           retryDelay: 3000,
           extra: {
             connectionTimeoutMillis: 10000,
+            ...(useSsl ? { ssl: sslOptions } : {}),
           },
         };
       },
