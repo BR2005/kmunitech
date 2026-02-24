@@ -34,14 +34,31 @@ import { PublicService } from './public/public.service';
         const databaseUrl = (process.env.DATABASE_URL || '').trim();
         const dbHost = (process.env.DB_HOST || '').trim();
         const dbSslRaw = (process.env.DB_SSL || '').trim().toLowerCase();
-        const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'true' : true;
+
+        let parsedUrl: URL | undefined;
+        if (!dbHost && databaseUrl) {
+          try {
+            parsedUrl = new URL(databaseUrl);
+          } catch {
+            // If parsing fails, we'll fall back to passing `url` through.
+          }
+        }
+
+        const sslmode = (parsedUrl?.searchParams.get('sslmode') || '').trim().toLowerCase();
+        const inferredUseSsl = sslmode.length > 0 ? sslmode !== 'disable' : true;
+        const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'true' : inferredUseSsl;
+
         const rejectUnauthorizedRaw = (
           process.env.DB_SSL_REJECT_UNAUTHORIZED || ''
         )
           .trim()
           .toLowerCase();
+        const inferredRejectUnauthorized =
+          sslmode === 'verify-ca' || sslmode === 'verify-full' || sslmode === 'verify';
         const rejectUnauthorized =
-          rejectUnauthorizedRaw.length > 0 ? rejectUnauthorizedRaw === 'true' : false;
+          rejectUnauthorizedRaw.length > 0
+            ? rejectUnauthorizedRaw === 'true'
+            : inferredRejectUnauthorized;
 
         const dbSslCaInline = (process.env.DB_SSL_CA || '').trim();
         const dbSslCaPath = (process.env.DB_SSL_CA_PATH || '').trim();
@@ -68,10 +85,18 @@ import { PublicService } from './public/public.service';
                 password: process.env.DB_PASS || 'postgres',
                 database: process.env.DB_NAME || 'kmunitech',
               }
-            : databaseUrl
+            : parsedUrl
               ? {
-                  url: databaseUrl,
+                  host: parsedUrl.hostname,
+                  port: parsedUrl.port ? Number(parsedUrl.port) : 5432,
+                  username: decodeURIComponent(parsedUrl.username),
+                  password: decodeURIComponent(parsedUrl.password),
+                  database: decodeURIComponent(parsedUrl.pathname.replace(/^\//, '')),
                 }
+              : databaseUrl
+                ? {
+                    url: databaseUrl,
+                  }
               : {
                   host: 'localhost',
                   port: +(process.env.DB_PORT || 5432),
