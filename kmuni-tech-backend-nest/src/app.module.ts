@@ -32,10 +32,7 @@ import { PublicService } from './public/public.service';
       useFactory: async () => {
         const databaseUrl = (process.env.DATABASE_URL || '').trim();
         const dbSslRaw = (process.env.DB_SSL || '').trim().toLowerCase();
-        const useSsl =
-          dbSslRaw.length > 0
-            ? dbSslRaw === 'true'
-            : Boolean(databaseUrl) || process.env.NODE_ENV === 'production';
+        const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'false' : false;
         const sslConfig = useSsl ? { ssl: { rejectUnauthorized: false } } : {};
 
         return {
