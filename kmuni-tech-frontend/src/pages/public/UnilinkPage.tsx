@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import { Award, Users, Video } from 'lucide-react';
@@ -101,64 +102,81 @@ export default function UnilinkPage() {
             </section>
 
             {/* Right */}
-            <section className="card p-6 md:p-8">
-              {!submitted ? (
-                <form onSubmit={onSubmit} className="space-y-5">
+            <div className="space-y-6">
+              <section className="card p-6 md:p-8">
+                {!submitted ? (
+                  <form onSubmit={onSubmit} className="space-y-5">
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">Register to Join</h2>
+                      <p className="text-slate-400 text-sm mt-2">
+                        Enter your details. After submitting, you’ll see the WhatsApp group link.
+                      </p>
+                    </div>
+
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/20 text-red-300 text-sm rounded-xl px-4 py-3">
+                        {error}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Name</label>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="input-field"
+                        placeholder="Your full name"
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 text-sm font-medium mb-2">Phone number</label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(normalizePhone(e.target.value))}
+                        className="input-field"
+                        placeholder="e.g. +91XXXXXXXXXX"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        required
+                      />
+                    </div>
+
+                    <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Submitting...' : 'Submit Details'}
+                    </button>
+                  </form>
+                ) : (
+                  <a
+                    href={whatsappGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary w-full text-center break-all"
+                  >
+                    {whatsappGroupUrl}
+                  </a>
+                )}
+              </section>
+
+              <section className="card p-6 md:p-8">
+                <div className="space-y-3">
                   <div>
-                    <h2 className="text-2xl font-bold text-white">Register to Join</h2>
+                    <h2 className="text-xl font-bold text-white">Register to Existing Course</h2>
                     <p className="text-slate-400 text-sm mt-2">
-                      Enter your details. After submitting, you’ll see the WhatsApp group link.
+                      Already have a course in mind? Browse courses and enroll.
                     </p>
                   </div>
 
-                  {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-300 text-sm rounded-xl px-4 py-3">
-                      {error}
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Name</label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="input-field"
-                      placeholder="Your full name"
-                      autoComplete="name"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 text-sm font-medium mb-2">Phone number</label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(normalizePhone(e.target.value))}
-                      className="input-field"
-                      placeholder="e.g. +91XXXXXXXXXX"
-                      autoComplete="tel"
-                      inputMode="tel"
-                      required
-                    />
-                  </div>
-
-                  <button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
-                    {isSubmitting ? 'Submitting...' : 'Submit Details'}
-                  </button>
-                </form>
-              ) : (
-                <a
-                  href={whatsappGroupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-primary w-full text-center break-all"
-                >
-                  {whatsappGroupUrl}
-                </a>
-              )}
-            </section>
+                  <Link to="/courses" className="btn-secondary w-full text-center">
+                    Register to Existing Course
+                  </Link>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
       </main>
