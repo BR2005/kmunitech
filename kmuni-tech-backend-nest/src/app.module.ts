@@ -31,23 +31,32 @@ import { PublicService } from './public/public.service';
     TypeOrmModule.forRootAsync({
       useFactory: async () => {
         const databaseUrl = (process.env.DATABASE_URL || '').trim();
+        const dbHost = (process.env.DB_HOST || '').trim();
         const dbSslRaw = (process.env.DB_SSL || '').trim().toLowerCase();
-        const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'false' : false;
+        const useSsl = dbSslRaw.length > 0 ? dbSslRaw === 'true' : true;
         const sslConfig = useSsl ? { ssl: { rejectUnauthorized: false } } : {};
 
         return {
           type: 'postgres' as const,
-          ...(databaseUrl
+          ...(dbHost
             ? {
-                url: databaseUrl,
-              }
-            : {
-                host: process.env.DB_HOST || 'localhost',
+                host: dbHost,
                 port: +(process.env.DB_PORT || 5432),
                 username: process.env.DB_USER || 'postgres',
                 password: process.env.DB_PASS || 'postgres',
                 database: process.env.DB_NAME || 'kmunitech',
-              }),
+              }
+            : databaseUrl
+              ? {
+                  url: databaseUrl,
+                }
+              : {
+                  host: 'localhost',
+                  port: +(process.env.DB_PORT || 5432),
+                  username: process.env.DB_USER || 'postgres',
+                  password: process.env.DB_PASS || 'postgres',
+                  database: process.env.DB_NAME || 'kmunitech',
+                }),
           ...sslConfig,
           entities: [User, Course, Lesson, Enrollment, UnilinkLead],
           synchronize: true,
