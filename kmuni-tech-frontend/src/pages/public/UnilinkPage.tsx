@@ -166,14 +166,16 @@ export default function UnilinkPage() {
                 <div className="space-y-3">
                   <div>
                     <h2 className="text-xl font-bold text-white">Register to Existing Course</h2>
-                    <p className="text-slate-400 text-sm mt-2">
-                      Already have a course in mind? Browse courses and enroll.
-                    </p>
-                  </div>
+                    <div className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
+                      <p className="text-slate-400 text-sm">
+                        Already have a course in mind? Browse courses and enroll.
+                      </p>
 
-                  <Link to="/courses" className="btn-secondary w-full text-center">
-                    Register to Existing Course
-                  </Link>
+                      <Link to="/courses" className="btn-secondary w-full text-center md:w-auto">
+                        Register to Existing Course
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </section>
             </div>
