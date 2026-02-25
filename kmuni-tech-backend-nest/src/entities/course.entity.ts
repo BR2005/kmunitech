@@ -38,7 +38,7 @@ export class Course {
   @Column({ type: 'int', nullable: true })
   totalDuration?: number | null;
 
-  @Column({ type: 'double precision', default: 0 })
+  @Column({ type: 'real', default: 0 })
   rating!: number;
 
   @Column({ type: 'int', default: 0 })

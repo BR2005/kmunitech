@@ -11,6 +11,6 @@ export class UnilinkLead {
   @Column({ type: 'text' })
   phone!: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ type: 'datetime' })
   createdAt!: Date;
 }
